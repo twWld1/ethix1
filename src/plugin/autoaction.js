@@ -1,14 +1,6 @@
 import config from '../../config.cjs';
 
 async function handleCommand(m, gss) {
-    const prefixMatch = m.body.match(/^[\\/!#.]/);
-    const prefix = prefixMatch ? prefixMatch[0] : '/';
-    const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-    const text = m.body.slice(prefix.length + cmd.length).trim();
-
-    if (!m.body.startsWith(prefix)) {
-        return;
-    }
 
     if (config.AUTO_TYPING && m.from) {
         gss.sendPresenceUpdate("composing", m.from);
