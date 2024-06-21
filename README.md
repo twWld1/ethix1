@@ -55,13 +55,11 @@
     <br>
     <a href='https://heroku.com/deploy' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-black?style=for-the-badge&logo=heroku&logoColor=white'/></a>
 
+
+
 3. ## Deploy to Koyeb ↓
 
-<a href="https://app.koyeb.com/apps/deploy" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot" height="112" width="310" /></a>
-  <div>
-<br>
-<div>
-  <br>
+<a href="https://app.koyeb.com/apps/deploy" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
 
 
 ## DEVELOPERS
