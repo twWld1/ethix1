@@ -59,7 +59,7 @@
 
 3. ## Deploy to Koyeb ↓
 
-<a href="https://app.koyeb.com/apps/deploy" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
+<a href="https://app.koyeb.com/apps/deploy?env%5BAUTO_STATUS_SEEN%5D&env%5BSESSION_ID" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
 
 
 ## DEVELOPERS
