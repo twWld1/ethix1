@@ -62,6 +62,18 @@
 <a href="https://app.koyeb.com/apps/deploy?type=git&repository=github.com/Ethix-Xsid/Ethix-MD&branch=main&env%5BAUTO_STATUS_SEEN%5D&env%5BSESSION_ID%5D&name=ethix" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
 
 
+4. ### DEPLOY TO RENDER
+
+1. If you don't have an account on Render, create one.
+    <br>
+    <a href='https://dashboard.render.com/register' target="_blank"><img alt='Render' src='https://img.shields.io/badge/-Create-black?style=for-the-badge&logo=render&logoColor=white'/></a>
+2. Deploy using Render.
+    <br>
+    <a href='https://render.com/deploy' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-black?style=for-the-badge&logo=render&logoColor=white'/></a>
+
+
+
+
 ## DEVELOPERS
 
 <div align="left">
