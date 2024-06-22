@@ -59,7 +59,7 @@
 
 3. ## Deploy to Koyeb ↓
 
-<a href="https://app.koyeb.com/apps/deploy?type=git&repository=github.com/Ethix-Xsid/Ethix-MD&branch=main&env%5BAUTO_STATUS_SEEN%5D&env%5BSESSION_ID%5D&name=ethix" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
+<a href="https://app.koyeb.com/apps/deploy?type=docker&image=quay.io/inrlwabot/inrl-bot:latest&env%5BSESSION_ID%5D&env%5BMODE%5D=public&env%5D=ethix-md" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
 
 
 ## DEVELOPERS
