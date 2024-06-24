@@ -164,7 +164,6 @@ Matrix.ev.on("connection.update", async update => {
             start();
         } else {
             console.log(chalk.red("[🚫️] Something Went Wrong: Failed to Make Connection"));
-            process.exit(1); 
         }
     }
 
