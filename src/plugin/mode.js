@@ -1,4 +1,13 @@
 import config from '../../config.cjs';
+import { writeFile } from 'fs/promises';
+import path from 'path';
+
+const configPath = path.resolve(__dirname, '../../config.cjs');
+
+const saveConfig = async (newConfig) => {
+  const configString = `export default ${JSON.stringify(newConfig, null, 2)};`;
+  await writeFile(configPath, configString, 'utf-8');
+};
 
 const modeCommand = async (m, Matrix) => {
   const botNumber = await Matrix.decodeJid(Matrix.user.id);
@@ -23,6 +32,7 @@ const modeCommand = async (m, Matrix) => {
     }
 
     try {
+      await saveConfig(config);
       await Matrix.sendMessage(m.from, { text: responseMessage }, { quoted: m });
     } catch (error) {
       console.error("Error processing your request:", error);
