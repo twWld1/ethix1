@@ -9,23 +9,18 @@ const modeCommand = async (m, Matrix) => {
   const text = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
 
   if (cmd === 'mode') {
-    if (!isCreator) return m.reply("* THIS IS AN OWNER COMMAND*");
-
-    let newMode;
+    if (!isCreator) return m.reply("*📛 THIS IS AN OWNER COMMAND*");
     let responseMessage;
+
     if (text === 'public') {
-      newMode = 'public';
-      config.MODE = newMode;
+      config.MODE || 'public';
       responseMessage = "Mode has been set to public.";
     } else if (text === 'self') {
-      newMode = 'self';
-      config.MODE = newMode;
+      config.MODE || 'self';
       responseMessage = "Mode has been set to self.";
     } else {
       responseMessage = "Usage:\n- `mode public`: Set mode to public\n- `mode self`: Set mode to self";
     }
-
-    responseMessage += `\nCurrent mode: ${newMode}`;
 
     try {
       await Matrix.sendMessage(m.from, { text: responseMessage }, { quoted: m });
@@ -34,6 +29,6 @@ const modeCommand = async (m, Matrix) => {
       await Matrix.sendMessage(m.from, { text: 'Error processing your request.' }, { quoted: m });
     }
   }
-}
+};
 
 export default modeCommand;
