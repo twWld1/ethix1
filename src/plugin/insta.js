@@ -1,6 +1,6 @@
-import axios from 'axios'; 
+import axios from 'axios';
 
-const apiBaseUrl = 'https://instagramdownloader.apinepdev.workers.dev/?url=';
+const apiBaseUrl = 'https://aiodownloader.onrender.com/download?url=';
 
 const instaDownload = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -20,28 +20,11 @@ const instaDownload = async (m, Matrix) => {
       const response = await axios.get(apiUrl);
       const result = response.data;
 
-      if (result.status && result.data.length > 0) {
-        const mediaType = result.data[0].type;
-        const mediaUrl = result.data[0].url;
-        const caption = "> © Powered By Ethix-Xsid";
-        
-        if (mediaType === 'image') {
-          const sendImage = {
-            image: { url: mediaUrl },
-            caption: caption,
-          };
-          await Matrix.sendMessage(m.from, sendImage, { quoted: m });
-        } else if (mediaType === 'video') {
-          const sendVideo = {
-            video: { url: mediaUrl },
-            caption: caption,
-          };
-          await Matrix.sendMessage(m.from,
-          sendVideo, { quoted: m });
-        } else {
-          throw new Error('Unsupported media type.');
-        }
+      if (result.status && result.data) {
+        const mediaUrl = result.data.low; // Use low quality URL as default
+        const caption = "© Powered By Ethix-MD";
 
+        await Matrix.sendMedia(m.from, mediaUrl, 'file', caption, m);
         await m.React('✅');
       } else {
         throw new Error('Invalid response from the downloader.');
