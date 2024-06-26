@@ -8,7 +8,7 @@ const geminiResponse = async (m, Matrix) => {
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
   const text = m.body.slice(prefix.length + cmd.length).trim();
 
-  const apiKey = "AIzaSyAIeYtTVkEk9VYOMvm-kLB4o2HT11GteU8";
+  const apiKey = "AIzaSyBGCdZ6IcTm2lbcyf2HSI6YNZMTudnAe5U";
   const genAI = new GoogleGenerativeAI(apiKey);
 
 
