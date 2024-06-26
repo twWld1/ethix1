@@ -12,7 +12,7 @@ const modeCommand = async (m, Matrix) => {
     if (!isCreator) return m.reply("*📛 THIS IS AN OWNER COMMAND*");
     let responseMessage;
 
-    if (['public', 'self'].includes(text)) {
+    if (['public', 'private'].includes(text)) {
       config.MODE = text;
       responseMessage = `Mode has been changed to ${text}.`;
     } else {
