@@ -32,7 +32,7 @@ const geminiResponse = async (m, Matrix) => {
         },
       };
 
-      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       const result = await model.generateContent([prompt, imagePart]);
       const response = await result.response;
 
