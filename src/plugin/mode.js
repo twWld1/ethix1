@@ -16,7 +16,7 @@ const modeCommand = async (m, Matrix) => {
       config.MODE = text;
       responseMessage = `Mode has been changed to ${text}.`;
     } else {
-      responseMessage = "Usage:\n- `mode public`: Set mode to public\n- `mode self`: Set mode to self";
+      responseMessage = "Usage:\n- `mode public`: Set mode to public\n- `mode private`: Set mode to private";
     }
 
     try {
