@@ -9,11 +9,6 @@ const geminiResponse = async (m, Matrix) => {
   const text = m.body.slice(prefix.length + cmd.length).trim();
 
   const apiKey = config.GEMINI_KEY;
-  
-  if (!apiKey) {
-    return m.reply("API key is missing in the configuration.");
-  }
-  
   const genAI = new GoogleGenerativeAI(apiKey);
   const validCommands = ['gemini', 'vision'];
 
