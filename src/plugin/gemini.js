@@ -1,23 +1,27 @@
 import axios from 'axios';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import config from '../../config.cjs';
 
 const geminiResponse = async (m, Matrix) => {
-
   const prefixMatch = m.body.match(/^[\\/!#.]/);
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
   const text = m.body.slice(prefix.length + cmd.length).trim();
 
-  const apiKey = "AIzaSyBGCdZ6IcTm2lbcyf2HSI6YNZMTudnAe5U";
+  const apiKey = config.GEMINI_KEY;
+  
+  if (!apiKey) {
+    return m.reply("API key is missing in the configuration.");
+  }
+  
   const genAI = new GoogleGenerativeAI(apiKey);
-
-
   const validCommands = ['gemini', 'vision'];
 
   if (validCommands.includes(cmd)) {
     if (!m.quoted || m.quoted.mtype !== 'imageMessage') {
       return m.reply(`*Send/Reply with an Image ${prefix + cmd}*`);
     }
+    
     m.reply("Please wait...");
 
     try {
@@ -34,10 +38,10 @@ const geminiResponse = async (m, Matrix) => {
 
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       const result = await model.generateContent([prompt, imagePart]);
-      const response = await result.response;
+      const response = result.response;
 
-      const textt = response.text();
-      m.reply(`${textt}`);
+      const textResponse = await response.text();
+      m.reply(`${textResponse}`);
     } catch (error) {
       console.error('Error in Gemini Pro Vision:', error);
       m.reply(`An error occurred: ${error.message}`);
