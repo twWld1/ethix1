@@ -134,9 +134,9 @@ async function start() {
     Matrix.ev.on("group-participants.update", async (messag) => await GroupUpdate(Matrix, messag));
 
     // Setting public or self mode based on config
-    if (config.MODE === 'public') {
+    if (config.MODE || "public") {
         Matrix.public = true;
-    } else if (config.MODE === 'self') {
+    } else if (config.MODE || "private") {
         Matrix.public = false;
     }
 
