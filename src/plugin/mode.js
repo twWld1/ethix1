@@ -1,4 +1,6 @@
 import config from '../../config.cjs';
+import fs from 'fs';
+import path from 'path';
 
 const modeCommand = async (m, Matrix) => {
   const botNumber = await Matrix.decodeJid(Matrix.user.id);
@@ -15,6 +17,15 @@ const modeCommand = async (m, Matrix) => {
     if (['public', 'private'].includes(text)) {
       config.MODE = text;
       responseMessage = `Mode has been changed to ${text}.`;
+
+      // Write the updated config back to the file
+      try {
+        const configPath = path.resolve(__dirname, '../../config.cjs');
+        fs.writeFileSync(configPath, `module.exports = ${JSON.stringify(config, null, 2)};`, 'utf-8');
+      } catch (error) {
+        console.error("Error writing to config file:", error);
+        responseMessage = 'Error updating configuration file.';
+      }
     } else {
       responseMessage = "Usage:\n- `mode public`: Set mode to public\n- `mode private`: Set mode to private";
     }
