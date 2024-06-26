@@ -20,6 +20,8 @@ const modeCommand = async (m, Matrix) => {
 
       // Write the updated config back to the file
       try {
+        const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
         const configPath = path.resolve(__dirname, '../../config.cjs');
         fs.writeFileSync(configPath, `module.exports = ${JSON.stringify(config, null, 2)};`, 'utf-8');
       } catch (error) {
