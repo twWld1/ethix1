@@ -134,11 +134,12 @@ async function start() {
     Matrix.ev.on("group-participants.update", async (messag) => await GroupUpdate(Matrix, messag));
 
     // Setting public or self mode based on config
-    if (config.MODE || "public") {
-        Matrix.public = true;
-    } else if (config.MODE || "private") {
-        Matrix.public = false;
-    }
+    if (config.MODE === "public") {
+    Matrix.public = true;
+} else if (config.MODE === "private") {
+    Matrix.public = false;
+}
+
 
 
 // Check Baileys connections
