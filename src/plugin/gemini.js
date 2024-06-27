@@ -1,6 +1,5 @@
 import { writeFile } from "fs/promises";
 import fs from 'fs';
-import gtts from 'node-gtts';
 import { readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { GoogleGenerativeAI } from "@google/generative-ai";
