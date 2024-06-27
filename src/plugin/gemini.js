@@ -22,16 +22,15 @@ const geminiResponse = async (m, Matrix) => {
     try {
       const prompt = text;
       const media = await m.quoted.download();
-      const mime = m.quoted.mtype;
 
       const imagePart = {
         inlineData: {
           data: Buffer.from(media).toString("base64"),
-          mimeType: mime
+          mimeType: "image/png",
         },
       };
 
-      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
       const result = await model.generateContent([prompt, imagePart]);
       const response = result.response;
 
