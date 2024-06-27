@@ -42,7 +42,6 @@ const store = makeInMemoryStore({
     })
 });
 
-// Baileys Connection Option
 async function start() {
     if (!config.SESSION_ID) {
         useQR = true;
@@ -104,7 +103,6 @@ async function start() {
     });
     store?.bind(Matrix.ev);
 
-    // Manage Device Logging
     if (!Matrix.authState.creds.registered && isSessionPutted) {
         const sessionID = config.SESSION_ID.split('Ethix-MD&')[1];
         const pasteUrl = `https://pastebin.com/raw/${sessionID}`;
@@ -117,7 +115,6 @@ async function start() {
         }
     }
 
-    // Response cmd pollMessage
     async function getMessage(key) {
         if (store) {
             const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -128,74 +125,71 @@ async function start() {
         };
     }
 
-    // Handle Incomming Messages
     Matrix.ev.on("messages.upsert", async chatUpdate => await Handler(chatUpdate, Matrix, logger));
     Matrix.ev.on("call", async (json) => await Callupdate(json, Matrix));
     Matrix.ev.on("group-participants.update", async (messag) => await GroupUpdate(Matrix, messag));
 
-    // Setting public or self mode based on config
     if (config.MODE === "public") {
-    Matrix.public = true;
-} else if (config.MODE === "private") {
-    Matrix.public = false;
-}
+        Matrix.public = true;
+    } else if (config.MODE === "private") {
+        Matrix.public = false;
+    }
 
+    Matrix.ev.on("connection.update", async update => {
+        const { connection, lastDisconnect } = update;
 
-
-// Check Baileys connections
-Matrix.ev.on("connection.update", async update => {
-    const { connection, lastDisconnect } = update;
-
-    if (connection === "close") {
-        let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-        if (reason === DisconnectReason.connectionClosed) {
-            console.log(chalk.red("[😩] Connection closed, reconnecting."));
-            start();
-        } else if (reason === DisconnectReason.connectionLost) {
-            console.log(chalk.red("[🤕] Connection Lost from Server, reconnecting."));
-            start();
-        } else if (reason === DisconnectReason.loggedOut) {
-            console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
-            process.exit(1);
-        } else if (reason === DisconnectReason.restartRequired) {
-            console.log(chalk.blue("[♻️] Server Restarting."));
-            start();
-        } else if (reason === DisconnectReason.timedOut) {
-            console.log(chalk.red("[⏳] Connection Timed Out, Trying to Reconnect."));
-            start();
-        } else {
-            console.log(chalk.red("[🚫️] Something Went Wrong: Failed to Make Connection"));
+        if (connection === "close") {
+            let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
+            if (reason === DisconnectReason.connectionClosed) {
+                console.log(chalk.red("[😩] Connection closed, reconnecting."));
+                start();
+            } else if (reason === DisconnectReason.connectionLost) {
+                console.log(chalk.red("[🤕] Connection Lost from Server, reconnecting."));
+                start();
+            } else if (reason === DisconnectReason.loggedOut) {
+                console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
+                process.exit(1);
+            } else if (reason === DisconnectReason.restartRequired) {
+                console.log(chalk.blue("[♻️] Server Restarting."));
+                start();
+            } else if (reason === DisconnectReason.timedOut) {
+                console.log(chalk.red("[⏳] Connection Timed Out, Trying to Reconnect."));
+                start();
+            } else {
+                console.log(chalk.red("[🚫️] Something Went Wrong: Failed to Make Connection"));
+                process.exit(1);
+            }
         }
-    }
 
-    if (connection === "open") {
-        if (initialConnection) {
-            console.log(chalk.green("😃 Integration Successful️ ✅"));
-            Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
-            initialConnection = false;
-        } else {
-            console.log(chalk.blue("♻️ Connection reestablished after restart."));
+        if (connection === "open") {
+            if (initialConnection) {
+                console.log(chalk.green("😃 Integration Successful️ ✅"));
+                Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
+                initialConnection = false;
+            } else {
+                console.log(chalk.blue("♻️ Connection reestablished after restart."));
+            }
         }
-    }
-});
+    });
 
-Matrix.ev.on('messages.upsert', async chatUpdate => {
-  try {
-    const mek = chatUpdate.messages[0];
-    if (!mek.key.fromMe && config.AUTO_REACT) {
-      console.log(mek);
-      if (mek.message) {
-        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-        await doReact(randomEmoji, mek, Matrix);
-      }
-    }
-  } catch (err) {
-    console.error('Error during auto reaction:', err);
-  }
-});
+    Matrix.ev.on('messages.upsert', async chatUpdate => {
+        try {
+            const mek = chatUpdate.messages[0];
+            if (!mek.key.fromMe && config.AUTO_REACT) {
+                console.log(mek);
+                if (mek.message) {
+                    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    await doReact(randomEmoji, mek, Matrix);
+                }
+            }
+        } catch (err) {
+            console.error('Error during auto reaction:', err);
+        }
+    });
 }
 
 start();
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
