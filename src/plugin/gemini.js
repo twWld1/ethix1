@@ -1,46 +1,48 @@
-import { writeFile } from "fs/promises";
-import fs from 'fs';
-import { readFileSync, unlinkSync } from 'fs';
-import { join } from 'path';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from 'axios';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import config from '../../config.cjs';
 
-const gemini = async (m, Matrix) => {
-  const API_KEY = config.GEMINI_KEY;
-
-  const command = m.body.split(' ')[0].toLowerCase();
+const geminiResponse = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-  const text = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
+  const text = m.body.slice(prefix.length + cmd.length).trim();
 
-  if (cmd === 'gemini') {
-    if (!text) {
-      return m.reply('Please give me a prompt');
+  const apiKey = config.GEMINI_KEY;
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const validCommands = ['gemini', 'vision'];
+
+  if (validCommands.includes(cmd)) {
+    if (!m.quoted || m.quoted.mtype !== 'imageMessage') {
+      return m.reply(`*Send/Reply with an Image ${prefix + cmd}*`);
     }
+    
+    m.reply("Please wait...");
+
     try {
-      const genAI = new GoogleGenerativeAI({ apiKey: API_KEY });
-      const thinkingMessage = await Matrix.sendMessage(m.from, { text: "Thinking..." }, { quoted: m });
+      const prompt = text;
+      const media = await m.quoted.download();
+      const mime = m.quoted.mimetype;
 
-      async function run() {
-        const model = await genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent({ prompt: text });
-        const { key } = thinkingMessage;
-        const aires = result.responses[0].text;
+      const imagePart = {
+        inlineData: {
+          data: Buffer.from(media).toString("base64"),
+          mimeType: mime
+        },
+      };
 
-        if (m.isGroup) {
-          await Matrix.sendMessage(m.from, { text: aires }, { quoted: key });
-        } else {
-          await Matrix.sendMessage(m.from, { text: aires }, { quoted: key });
-        }
-      }
+      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const result = await model.generateContent([prompt, imagePart]);
+      const response = result.response;
 
-      run();
+      const textResponse = await response.text();
+      m.reply(`${textResponse}`);
     } catch (error) {
-      console.error("Error generating response:", error);
-      m.reply("There was an error processing your request.");
+      console.error('Error in Gemini Pro Vision:', error);
+      m.reply(`An error occurred: ${error.message}`);
+      await m.React("❌");
     }
   }
 };
 
-export default gemini;
+export default geminiResponse;
