@@ -22,7 +22,7 @@ const geminiResponse = async (m, Matrix) => {
     try {
       const prompt = text;
       const media = await m.quoted.download();
-      const mime = m.quoted.mimetype;
+      const mime = m.quoted.mtype;
 
       const imagePart = {
         inlineData: {
