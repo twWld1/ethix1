@@ -1,48 +1,46 @@
-import axios from 'axios';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import config from '../../config.cjs';
+import { writeFile } from "fs/promises";
+import fs from 'fs';
+import gtts from 'node-gtts';
+import { readFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const geminiResponse = async (m, Matrix) => {
+const gemini = async (m, Matrix) => {
+  const API_KEY = config.GEMINI_KEY;
+
+  const command = m.body.split(' ')[0].toLowerCase();
   const prefixMatch = m.body.match(/^[\\/!#.]/);
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-  const text = m.body.slice(prefix.length + cmd.length).trim();
+  const text = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
 
-  const apiKey = config.GEMINI_KEY;
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const validCommands = ['gemini', 'vision'];
-
-  if (validCommands.includes(cmd)) {
-    if (!m.quoted || m.quoted.mtype !== 'imageMessage') {
-      return m.reply(`*Send/Reply with an Image ${prefix + cmd}*`);
+  if (cmd === 'gemini') {
+    if (!text) {
+      return m.reply('Please give me a prompt');
     }
-    
-    m.reply("Please wait...");
-
     try {
-      const prompt = text;
-      const media = await m.quoted.download();
-      const mime = m.quoted.mimetype;
+      const genAI = new GoogleGenerativeAI({ apiKey: API_KEY });
+      const thinkingMessage = await Matrix.sendMessage(m.from, { text: "Thinking..." }, { quoted: m });
 
-      const imagePart = {
-        inlineData: {
-          data: Buffer.from(media).toString("base64"),
-          mimeType: mime
-        },
-      };
+      async function run() {
+        const model = await genAI.getGenerativeModel({ model: "gemini-pro" });
+        const result = await model.generateContent({ prompt: text });
+        const { key } = thinkingMessage;
+        const aires = result.responses[0].text;
 
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      const result = await model.generateContent([prompt, imagePart]);
-      const response = result.response;
+        if (m.isGroup) {
+          await Matrix.sendMessage(m.from, { text: aires }, { quoted: key });
+        } else {
+          await Matrix.sendMessage(m.from, { text: aires }, { quoted: key });
+        }
+      }
 
-      const textResponse = await response.text();
-      m.reply(`${textResponse}`);
+      run();
     } catch (error) {
-      console.error('Error in Gemini Pro Vision:', error);
-      m.reply(`An error occurred: ${error.message}`);
-      await m.React("❌");
+      console.error("Error generating response:", error);
+      m.reply("There was an error processing your request.");
     }
   }
 };
 
-export default geminiResponse;
+export default gemini;
