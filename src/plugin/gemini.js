@@ -3,6 +3,7 @@ import fs from 'fs';
 import { readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import config from '../../config.cjs';
 
 const gemini = async (m, Matrix) => {
   const API_KEY = config.GEMINI_KEY;
