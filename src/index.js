@@ -26,7 +26,7 @@ import moment from 'moment-timezone';
 import axios from 'axios';
 import fetch from 'node-fetch';
 import * as os from 'os';
-import config from '../config.cjs';  
+import config from '../config.cjs';
 import pkg from '../lib/autoreact.cjs';
 
 const { emojis, doReact } = pkg;
@@ -34,7 +34,7 @@ const { emojis, doReact } = pkg;
 const app = express();
 const PORT = process.env.PORT || 3000;
 const sessionName = "session";
-let useStore = false; 
+let useStore = false;
 let useQR = false;
 
 const MAIN_LOGGER = pino({
@@ -43,11 +43,33 @@ const MAIN_LOGGER = pino({
 const logger = MAIN_LOGGER.child({});
 logger.level = "trace";
 const store = useStore ? makeInMemoryStore({ logger }) : undefined;
-store?.readFromFile("../session");
+const sessionFilePath = path.resolve(__dirname, '../session/session.json');
+
+// Fetch session data from Pastebin if SESSION_ID is provided
+async function fetchSessionFromPastebin() {
+    if (config.SESSION_ID) {
+        const sessionID = config.SESSION_ID.split('Ethix-MD&')[1];
+        const pasteUrl = `https://pastebin.com/raw/${sessionID}`;
+        const response = await fetch(pasteUrl);
+        const text = await response.text();
+        if (typeof text === 'string') {
+            fs.writeFileSync(sessionFilePath, text);
+            console.log('Session file created from Pastebin.');
+        }
+    }
+}
+
+if (fs.existsSync(sessionFilePath)) {
+    const savedCreds = JSON.parse(fs.readFileSync(sessionFilePath, 'utf-8'));
+    store?.readFromFile(savedCreds);
+}
 
 // Save every 1m
 setInterval(() => {
-    store?.writeToFile("../session");
+    if (store) {
+        const sessionData = store.writeToFile();
+        fs.writeFileSync(sessionFilePath, JSON.stringify(sessionData, null, 2));
+    }
 }, 60000);
 
 const msgRetryCounterCache = new NodeCache();
@@ -57,15 +79,17 @@ const P = pino({
 
 // Baileys Connection Option
 async function start() {
+    await fetchSessionFromPastebin();
+
     try {
         let { state, saveCreds } = await useMultiFileAuthState(sessionName);
         let { version, isLatest } = await fetchLatestBaileysVersion();
         console.log("CODED BY GOUTAM KUMAR");
         console.log(`Using WA v${version.join(".")}, isLatest: ${isLatest}`);
-     
+
         const Matrix = makeWASocket({
             version,
-            logger: P, 
+            logger: P,
             printQRInTerminal: useQR,
             browser: Browsers.macOS("Safari"),
             auth: {
@@ -78,13 +102,18 @@ async function start() {
 
         // Save the session
         Matrix.ev.on("creds.update", saveCreds);
-       
+
+        // Save the session data on update
+        Matrix.ev.on('creds.update', () => {
+            const sessionData = { creds: state.creds, keys: state.keys };
+            fs.writeFileSync(sessionFilePath, JSON.stringify(sessionData, null, 2));
+        });
 
         // Handle Incoming Messages
         Matrix.ev.on("messages.upsert", async chatUpdate => await Handler(chatUpdate, Matrix, logger));
         Matrix.ev.on("call", async (json) => await Callupdate(json, Matrix));
         Matrix.ev.on("group-participants.update", async (messag) => await GroupUpdate(Matrix, messag));
-        
+
         if (config.MODE === "public") {
             Matrix.public = true;
         } else if (config.MODE === "private") {
@@ -137,7 +166,7 @@ async function start() {
                 }
             }
         });
-        
+
         // Auto reaction feature
         Matrix.ev.on('messages.upsert', async chatUpdate => {
             try {
