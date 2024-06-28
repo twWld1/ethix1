@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = 'https://aiodownloader.onrender.com/download?url=';
+const apiBaseUrl = 'https://www.guruapi.tech/api/igdlv1?url=';
 
 const instaDownload = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -21,7 +21,7 @@ const instaDownload = async (m, Matrix) => {
       const result = response.data;
 
       if (result.status && result.data) {
-        const mediaUrl = result.data.low; // Use low quality URL as default
+        const mediaUrl = result.data.url_download; // Use low quality URL as default
         const caption = "© Powered By Ethix-MD";
 
         await Matrix.sendMedia(m.from, mediaUrl, 'file', caption, m);
