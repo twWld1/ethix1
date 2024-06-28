@@ -2,7 +2,7 @@ import * as pkg from '@whiskeysockets/baileys'; // Import all exports from baile
 
 const { generateWAMessageFromContent, proto } = pkg; // Destructure needed functions
 
-const alive = async (m, conn) => {
+const alive = async (m, Matrix) => {
   const uptimeSeconds = process.uptime();
   const days = Math.floor(uptimeSeconds / (24 * 3600));
   const hours = Math.floor((uptimeSeconds % (24 * 3600)) / 3600);
@@ -19,6 +19,23 @@ _______________________
 _______________________
 `;
 
+const buttons = [
+        {
+          "name": "quick_reply",
+          "buttonParamsJson": JSON.stringify({
+            display_text: "MENU",
+            id: `.menu`
+          })
+        },
+        {
+          "name": "quick_reply",
+          "buttonParamsJson": JSON.stringify({
+            display_text: "PING",
+            id: `.ping`
+          })
+        },
+        ],
+
   const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
           message: {
@@ -26,38 +43,35 @@ _______________________
               deviceListMetadata: {},
               deviceListMetadataVersion: 2
             },
-        interactiveMessage: proto.Message.InteractiveMessage.create({
-          body: proto.Message.InteractiveMessage.Body.create({
-            text: uptimeMessage
-          }),
-          footer: proto.Message.InteractiveMessage.Footer.create({
-            text: "© Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
-          }),
-          header: proto.Message.InteractiveMessage.Header.create({
-            title: "Ethix-MD Status",
-            subtitle: "Uptime",
-            hasMediaAttachment: false
-          }),
-          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({ // Use camelCase
-            buttons: [
-              {
-                name: "quick_reply",
-                buttonParamsJson: "{\"display_text\":\"Menu\",\"id\":\".menu\"}"
-              },
-              {
-                name: "quick_reply",
-                buttonParamsJson: "{\"display_text\":\"Ping\",\"id\":\".ping\"}"
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: uptimeMessage
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: "",
+                gifPlayback: true,
+                subtitle: "",
+                hasMediaAttachment: false 
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons
+              }),
+              contextInfo: {
+                mentionedJid: [m.sender],
+                forwardingScore: 9999,
+                isForwarded: true,
               }
-            ]
-          })
-        })
-      }
-    }
-  }));
+            }),
+          },
+        },
+      }, {});
 
-  await conn.relayMessage(m.from, msg.message, {
-    messageId: msg.key.id
-  });
+      await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
+        messageId: msg.key.id
+      });
 };
 
 export default alive;
