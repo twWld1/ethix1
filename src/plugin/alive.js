@@ -1,6 +1,5 @@
-import * as pkg from '@whiskeysockets/baileys'; // Import all exports from baileys
-
-const { generateWAMessageFromContent, proto } = pkg; // Destructure needed functions
+import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
+const { generateWAMessageFromContent, proto } = pkg;
 
 const alive = async (m, Matrix) => {
   const uptimeSeconds = process.uptime();
