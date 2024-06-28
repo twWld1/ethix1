@@ -182,13 +182,14 @@ const test = async (m, Matrix) => {
             }),
             contextInfo: {
                   mentionedJid: [m.sender], 
-                  forwardingScore: 9999,
+                  forwardingScore: 999,
                   isForwarded: true,
-                  forwardedNewsletterMessageInfo:
+                forwardedNewsletterMessageInfo: {
                   newsletterJid: '120363249960769123@newsletter',
-                  newsletterName: 'Ethix-MD',
+                  newsletterName: "Ethix-MD",
                   serverMessageId: 143
                 }
+              }
           }),
         },
       },
