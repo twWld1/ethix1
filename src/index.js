@@ -1,6 +1,16 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { makeWASocket, Browsers, jidDecode, makeInMemoryStore, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, DisconnectReason, useMultiFileAuthState, getAggregateVotesInPollMessage } from '@whiskeysockets/baileys';
+import {
+    makeWASocket,
+    Browsers,
+    jidDecode,
+    makeInMemoryStore,
+    makeCacheableSignalKeyStore,
+    fetchLatestBaileysVersion,
+    DisconnectReason,
+    useMultiFileAuthState,
+    getAggregateVotesInPollMessage
+} from '@whiskeysockets/baileys';
 import { Handler, Callupdate, GroupUpdate } from './event/index.js';
 import { Boom } from '@hapi/boom';
 import express from 'express';
@@ -14,7 +24,7 @@ import moment from 'moment-timezone';
 import axios from 'axios';
 import fetch from 'node-fetch';
 import * as os from 'os';
-import config from '../config.cjs';  
+import config from '../config.cjs';
 import pkg from '../lib/autoreact.cjs';
 const { emojis, doReact } = pkg;
 
@@ -110,9 +120,13 @@ async function start() {
             const response = await fetch(pasteUrl);
             const text = await response.text();
             if (typeof text === 'string') {
-                fs.writeFileSync('./session/creds.json', text);
-                console.log('session file created');
-                await start();
+                if (!fs.existsSync('./session/creds.json')) {
+                    fs.writeFileSync('./session/creds.json', text);
+                    console.log('session file created');
+                    await start();
+                } else {
+                    console.log('session file already exists');
+                }
             }
         }
 
@@ -159,7 +173,7 @@ async function start() {
                     start();
                 } else {
                     console.error("[🚫️] Something Went Wrong: Failed to Make Connection", reason);
-                    process.exit(1);  
+                    process.exit(1);
                 }
             }
 
@@ -190,7 +204,7 @@ async function start() {
         });
     } catch (error) {
         console.error('Critical Error:', error);
-        process.exit(1); 
+        process.exit(1);
     }
 }
 
