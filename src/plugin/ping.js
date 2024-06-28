@@ -4,9 +4,6 @@ const ping = async (m, sock) => {
 
   if (cmd === "ping") {
     const startTime = new Date();
-    await sock.sendMessage(m.from, { text: '*_Pinging..._*' }, { quoted: m });
-    await m.React('🚀');
-
     const text = `*_🔥⃝вσт ѕρєє∂: ${new Date() - startTime} ms_*`;
     await sock.sendMessage(m.from, { text }, { quoted: m });
 
