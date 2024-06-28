@@ -18,13 +18,13 @@ _______________________
 _______________________
 `;
 
-  const messageContent = {
-    viewOnceMessage: {
-      message: {
-        "messageContextInfo": {
-          "deviceListMetadata": {},
-          "deviceListMetadataVersion": 2
-        },
+  const msg = generateWAMessageFromContent(m.from, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: {
+              deviceListMetadata: {},
+              deviceListMetadataVersion: 2
+            },
         interactiveMessage: proto.Message.InteractiveMessage.create({
           body: proto.Message.InteractiveMessage.Body.create({
             text: uptimeMessage
@@ -53,8 +53,6 @@ _______________________
       }
     }
   };
-
-  const msg = await conn.generateWAMessageFromContent(m.chat, messageContent, {});
 
   await conn.relayMessage(msg.key.remoteJid, msg.message, {
     messageId: msg.key.id
