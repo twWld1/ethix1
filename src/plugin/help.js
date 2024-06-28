@@ -184,6 +184,10 @@ const test = async (m, Matrix) => {
                   mentionedJid: [m.sender], 
                   forwardingScore: 9999,
                   isForwarded: true,
+                  forwardedNewsletterMessageInfo:
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: ownername,
+                  serverMessageId: 143
                 }
           }),
         },
