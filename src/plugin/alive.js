@@ -18,7 +18,7 @@ _______________________
 _______________________
 `;
 
-const buttons = [
+  const buttons = [
         {
           "name": "quick_reply",
           "buttonParamsJson": JSON.stringify({
@@ -32,45 +32,45 @@ const buttons = [
             display_text: "PING",
             id: `.ping`
           })
-        },
-        ],
+        }
+        ];
 
   const msg = generateWAMessageFromContent(m.from, {
-        viewOnceMessage: {
-          message: {
-            messageContextInfo: {
-              deviceListMetadata: {},
-              deviceListMetadataVersion: 2
-            },
-            interactiveMessage: proto.Message.InteractiveMessage.create({
-              body: proto.Message.InteractiveMessage.Body.create({
-                text: uptimeMessage
-              }),
-              footer: proto.Message.InteractiveMessage.Footer.create({
-                text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
-              }),
-              header: proto.Message.InteractiveMessage.Header.create({
-                title: "",
-                gifPlayback: true,
-                subtitle: "",
-                hasMediaAttachment: false 
-              }),
-              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-                buttons
-              }),
-              contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 9999,
-                isForwarded: true,
-              }
-            }),
-          },
+    viewOnceMessage: {
+      message: {
+        messageContextInfo: {
+          deviceListMetadata: {},
+          deviceListMetadataVersion: 2
         },
-      }, {});
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: uptimeMessage
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+            title: "",
+            gifPlayback: true,
+            subtitle: "",
+            hasMediaAttachment: false 
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons
+          }),
+          contextInfo: {
+            mentionedJid: [m.sender],
+            forwardingScore: 9999,
+            isForwarded: true,
+          }
+        }),
+      },
+    },
+  }, {});
 
-      await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
-        messageId: msg.key.id
-      });
+  await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
+    messageId: msg.key.id
+  });
 };
 
 export default alive;
