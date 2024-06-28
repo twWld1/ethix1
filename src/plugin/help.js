@@ -186,7 +186,7 @@ const test = async (m, Matrix) => {
                   isForwarded: true,
                   forwardedNewsletterMessageInfo:
                   newsletterJid: '120363249960769123@newsletter',
-                  newsletterName: ownername,
+                  newsletterName: 'Ethix-MD',
                   serverMessageId: 143
                 }
           }),
