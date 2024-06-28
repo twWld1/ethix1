@@ -32,7 +32,7 @@ import pkg from '../lib/autoreact.cjs';
 const { emojis, doReact } = pkg;
 
 const app = express();
-const port = 8000;
+const PORT = process.env.PORT || 3000;
 const sessionName = "session";
 let useStore = false; 
 let useQR = false;
@@ -161,11 +161,10 @@ async function start() {
 }
 
 start();
-
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
