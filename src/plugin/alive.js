@@ -8,7 +8,7 @@ const alive = async (m, Matrix) => {
   const minutes = Math.floor((uptimeSeconds % 3600) / 60);
   const seconds = Math.floor(uptimeSeconds % 60);
 
-  const uptimeMessage = `* ETHIX-MD Status Overview*
+  const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
 _______________________
 
 *📆 ${days} Day*
