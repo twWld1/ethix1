@@ -155,7 +155,7 @@ Matrix.ev.on("connection.update", async update => {
             start();
         } else if (reason === DisconnectReason.loggedOut) {
             console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
-            process.exit();
+            process.exit(1);
         } else if (reason === DisconnectReason.restartRequired) {
             console.log(chalk.blue("[♻️] Server Restarting."));
             start();
@@ -164,7 +164,7 @@ Matrix.ev.on("connection.update", async update => {
             start();
         } else {
             console.log(chalk.red("[🚫️] Something Went Wrong: Failed to Make Connection"));
-            process.exit()
+            process.exit(1)
         }
     }
 
