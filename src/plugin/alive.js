@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { performance } from 'perf_hooks';
 
 // Function to get the uptime in a human-readable format
 const getUptime = () => {
@@ -11,44 +11,12 @@ const getUptime = () => {
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 };
 
-// Helper function to get the platform name
-const getPlatformName = () => {
-  const platform = process.platform;
-  if (platform === 'darwin') return 'macOS';
-  if (platform === 'win32') return 'Windows';
-  if (platform === 'linux') {
-    // Check for specific Linux distros
-    if (fs.existsSync('/etc/heroku-release')) return 'Heroku';
-    if (fs.existsSync('/etc/koyeb-release')) return 'Koyeb';
-    if (fs.existsSync('/etc/render-release')) return 'Render';
-    return 'Linux';
-  }
-  return 'Unknown';
-};
-
-
-// Letter-by-letter typewriter effect function
-const typeWriterEffect = async (m, Matrix, key, message) => {
-  const typingSpeed = 100; // Speed in milliseconds
-  let i = 0;
-
-  const typewriterInterval = setInterval(async () => {
-    if (i < message.length) {
-      const typedText = message.slice(0, i + 1);
-      await Matrix.relayMessage(m.from, {
-        protocolMessage: {
-          key: key,
-          type: 14,
-          editedMessage: {
-            conversation: typedText,
-          },
-        },
-      }, {});
-      i++;
-    } else {
-      clearInterval(typewriterInterval);
-    }
-  }, typingSpeed);
+// Function to measure ping
+const measurePing = async () => {
+  const start = performance.now();
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulating some async operation
+  const end = performance.now();
+  return Math.round(end - start);
 };
 
 // Main command function
@@ -57,49 +25,15 @@ const serverStatusCommand = async (m, Matrix) => {
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
 
-  if (['alive', 'uptime', 'runtime'].includes(cmd)) {
+  if (['alive', 'uptime', 'runtime', 'ping'].includes(cmd)) {
     const uptime = getUptime();
-    const platform = getPlatformName();
+    const ping = await measurePing();
 
     try {
-      const loadingMessages = [
-        "*「▰▰▰▱▱▱▱▱▱▱」*",
-        "*「▰▰▰▰▱▱▱▱▱▱」*",
-        "*「▰▰▰▰▰▱▱▱▱▱」*",
-        "*「▰▰▰▰▰▰▱▱▱▱」*",
-        "*「▰▰▰▰▰▰▰▱▱▱」*",
-        "*「▰▰▰▰▰▰▰▰▱▱」*",
-        "*「▰▰▰▰▰▰▰▰▰▱」*",
-        "*「▰▰▰▰▰▰▰▰▰▰」*",
-      ];
-
-      const loadingMessageCount = loadingMessages.length;
-      let currentMessageIndex = 0;
-
-      const { key } = await Matrix.sendMessage(m.from, { text: loadingMessages[currentMessageIndex] }, { quoted: m });
-
-      const loadingInterval = setInterval(() => {
-        currentMessageIndex = (currentMessageIndex + 1) % loadingMessageCount;
-        Matrix.relayMessage(m.from, {
-          protocolMessage: {
-            key: key,
-            type: 14,
-            editedMessage: {
-              conversation: loadingMessages[currentMessageIndex],
-            },
-          },
-        }, {});
-      }, 500);
-
-
-      await new Promise(resolve => setTimeout(resolve, 4000));
-
-      clearInterval(loadingInterval);
-
       // Create the status message
-      const statusMessage = `_Ethix-MD Status_\n\n📅 Uptime: ${uptime}\n🖥 Platform: ${platform}\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
+      const statusMessage = `_Ethix-MD Status_\n\n📅 Uptime: ${uptime}\n📡 Ping: ${ping}ms\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
 
-      await typeWriterEffect(m, Matrix, key, statusMessage);
+      await Matrix.sendMessage(m.from, { text: statusMessage }, { quoted: m });
     } catch (error) {
       console.error("Error processing your request:", error);
       await Matrix.sendMessage(m.from, { text: 'Error processing your request.' }, { quoted: m });
