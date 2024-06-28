@@ -43,7 +43,9 @@ const MAIN_LOGGER = pino({
 const logger = MAIN_LOGGER.child({});
 logger.level = "trace";
 const store = useStore ? makeInMemoryStore({ logger }) : undefined;
-const sessionFilePath = path.resolve(__dirname, '../session/session.json');
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
+const sessionFilePath = path.resolve(__dirname, '../session/creds.json');
 
 // Fetch session data from Pastebin if SESSION_ID is provided
 async function fetchSessionFromPastebin() {
