@@ -1,49 +1,64 @@
-import { performance } from 'perf_hooks';
+import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
+const { generateWAMessageFromContent, proto } = pkg;
 
-// Function to get the uptime in a human-readable format
-const getUptime = () => {
+const alive = async (m, conn) => {
   const uptimeSeconds = process.uptime();
   const days = Math.floor(uptimeSeconds / (24 * 3600));
   const hours = Math.floor((uptimeSeconds % (24 * 3600)) / 3600);
   const minutes = Math.floor((uptimeSeconds % 3600) / 60);
   const seconds = Math.floor(uptimeSeconds % 60);
 
-  return {
-    days,
-    hours,
-    minutes,
-    seconds,
-  };
-};
+  const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
+_______________________
 
-// Function to measure ping
-const measurePing = async () => {
-  const start = performance.now();
-  await new Promise(resolve => setTimeout(resolve, 100)); // Simulating some async operation
-  const end = performance.now();
-  return Math.round(end - start);
-};
+*📆 ${days} Day*
+*🕰️ ${hours} Hour*
+*⏳ ${minutes} Minute*
+*⏲️ ${seconds} Second*
+_______________________
+`;
 
-// Main command function
-const serverStatusCommand = async (m, Matrix) => {
-  const prefixMatch = m.body.match(/^[\\/!#.]/);
-  const prefix = prefixMatch ? prefixMatch[0] : '/';
-  const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
-
-  if (['alive', 'uptime', 'runtime'].includes(cmd)) {
-    const uptime = getUptime();
-    const ping = await measurePing();
-
-    try {
-      // Create the status message
-      const statusMessage = `_Ethix-MD Status_\n\n*📆 ${uptime.days} Day*\n\n*🕰️ ${uptime.hours} Hour*\n\n*⏳ ${uptime.minutes} Minute*\n\n*⏲️ ${uptime.seconds} Second*\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
-
-      await Matrix.sendMessage(m.from, { text: statusMessage }, { quoted: m });
-    } catch (error) {
-      console.error("Error processing your request:", error);
-      await Matrix.sendMessage(m.from, { text: 'Error processing your request.' }, { quoted: m });
+  const messageContent = {
+    viewOnceMessage: {
+      message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: uptimeMessage
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: "© Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+            title: "Ethix-MD Status",
+            subtitle: "Uptime",
+            hasMediaAttachment: false
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [
+              {
+                name: "quick_reply",
+                buttonParamsJson: "{\"display_text\":\"Menu\",\"id\":\".menu\"}"
+              },
+              {
+                name: "quick_reply",
+                buttonParamsJson: "{\"display_text\":\"Ping\",\"id\":\".ping\"}"
+              }
+            ]
+          })
+        })
+      }
     }
-  }
+  };
+
+  const msg = await conn.generateWAMessageFromContent(m.chat, messageContent, {});
+
+  await conn.relayMessage(msg.key.remoteJid, msg.message, {
+    messageId: msg.key.id
+  });
 };
 
-export default serverStatusCommand;
+export default alive;
