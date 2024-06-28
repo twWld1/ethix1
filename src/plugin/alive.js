@@ -1,5 +1,6 @@
-import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
-const { generateWAMessageFromContent, proto } = pkg;
+import * as pkg from '@whiskeysockets/baileys'; // Import all exports from baileys
+
+const { generateWAMessageFromContent, proto } = pkg; // Destructure needed functions
 
 const alive = async (m, conn) => {
   const uptimeSeconds = process.uptime();
@@ -8,7 +9,7 @@ const alive = async (m, conn) => {
   const minutes = Math.floor((uptimeSeconds % 3600) / 60);
   const seconds = Math.floor(uptimeSeconds % 60);
 
-  const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
+  const uptimeMessage = `* ETHIX-MD Status Overview*
 _______________________
 
 *📆 ${days} Day*
@@ -19,7 +20,7 @@ _______________________
 `;
 
   const msg = generateWAMessageFromContent(m.from, proto.Message.fromObject({
-    viewOnceMessage: {
+    viewOnceMessage: { // Use camelCase for property names
       message: {
         messageContextInfo: {
           deviceListMetadata: {},
@@ -37,17 +38,16 @@ _______________________
             subtitle: "Uptime",
             hasMediaAttachment: false
           }),
-          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({ // Use camelCase
             buttons: [
               {
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Menu\",\"id\":\".menu\"}"
               },
-                {
+              {
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Ping\",\"id\":\".ping\"}"
-          }
-              })
+              }
             ]
           })
         })
