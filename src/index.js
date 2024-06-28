@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
 import {
     makeWASocket,
     Browsers,
@@ -11,6 +12,7 @@ import {
     useMultiFileAuthState,
     getAggregateVotesInPollMessage
 } from '@whiskeysockets/baileys';
+
 import { Handler, Callupdate, GroupUpdate } from './event/index.js';
 import { Boom } from '@hapi/boom';
 import express from 'express';
@@ -24,156 +26,98 @@ import moment from 'moment-timezone';
 import axios from 'axios';
 import fetch from 'node-fetch';
 import * as os from 'os';
-import config from '../config.cjs';
+import config from '../config.cjs';  
 import pkg from '../lib/autoreact.cjs';
+
 const { emojis, doReact } = pkg;
 
-const sessionName = "session";
 const app = express();
-const orange = chalk.bold.hex("#FFA500");
-const lime = chalk.bold.hex("#32CD32");
-let useQR;
-let isSessionPutted;
-let initialConnection = true;
-const PORT = process.env.PORT || 3000;
+const port = 8000;
+const sessionName = "session";
+let useStore = false; 
+let useQR = false;
 
 const MAIN_LOGGER = pino({
     timestamp: () => `,"time":"${new Date().toJSON()}"`
 });
 const logger = MAIN_LOGGER.child({});
 logger.level = "trace";
+const store = useStore ? makeInMemoryStore({ logger }) : undefined;
+store?.readFromFile("../session");
+
+// Save every 1m
+setInterval(() => {
+    store?.writeToFile("../session");
+}, 60000);
 
 const msgRetryCounterCache = new NodeCache();
-
-const store = makeInMemoryStore({
-    logger: pino().child({
-        level: 'silent',
-        stream: 'store'
-    })
+const P = pino({
+    level: "silent"
 });
 
+// Baileys Connection Option
 async function start() {
     try {
-        if (!config.SESSION_ID) {
-            useQR = true;
-            isSessionPutted = false;
-        } else {
-            useQR = false;
-            isSessionPutted = true;
-        }
-
         let { state, saveCreds } = await useMultiFileAuthState(sessionName);
         let { version, isLatest } = await fetchLatestBaileysVersion();
-        console.log(chalk.red("CODED BY GOUTAM KUMAR & Ethix-Xsid"));
-        console.log(chalk.green(`using WA v${version.join(".")}, isLatest: ${isLatest}`));
-
-        const Device = (os.platform() === 'win32') ? 'Windows' : (os.platform() === 'darwin') ? 'MacOS' : 'Linux';
+        console.log("CODED BY GOUTAM KUMAR");
+        console.log(`Using WA v${version.join(".")}, isLatest: ${isLatest}`);
+     
         const Matrix = makeWASocket({
             version,
-            logger: pino({ level: 'silent' }),
+            logger: P, 
             printQRInTerminal: useQR,
-            browser: [Device, 'chrome', '121.0.6167.159'],
-            patchMessageBeforeSending: (message) => {
-                const requiresPatch = !!(
-                    message.buttonsMessage ||
-                    message.templateMessage ||
-                    message.listMessage
-                );
-                if (requiresPatch) {
-                    message = {
-                        viewOnceMessage: {
-                            message: {
-                                messageContextInfo: {
-                                    deviceListMetadataVersion: 2,
-                                    deviceListMetadata: {},
-                                },
-                                ...message,
-                            },
-                        },
-                    };
-                }
-                return message;
-            },
+            browser: Browsers.macOS("Safari"),
             auth: {
                 creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+                keys: makeCacheableSignalKeyStore(state.keys, P)
             },
-            getMessage: async (key) => {
-                if (store) {
-                    const msg = await store.loadMessage(key.remoteJid, key.id);
-                    return msg.message || undefined;
-                }
-                return {
-                    conversation: "Hello World"
-                };
-            },
-            markOnlineOnConnect: true,
-            generateHighQualityLinkPreview: true,
-            defaultQueryTimeoutMs: undefined,
             msgRetryCounterCache
         });
         store?.bind(Matrix.ev);
 
-        if (!Matrix.authState.creds.registered && isSessionPutted) {
-            const sessionID = config.SESSION_ID.split('Ethix-MD&')[1];
-            const pasteUrl = `https://pastebin.com/raw/${sessionID}`;
-            const response = await fetch(pasteUrl);
-            const text = await response.text();
-            if (typeof text === 'string') {
-                if (!fs.existsSync('./session/creds.json')) {
-                    fs.writeFileSync('./session/creds.json', text);
-                    console.log('session file created');
-                    await start();
-                } else {
-                    console.log('session file already exists');
-                }
-            }
-        }
+        // Save the session
+        Matrix.ev.on("creds.update", saveCreds);
+       
 
-        async function getMessage(key) {
-            if (store) {
-                const msg = await store.loadMessage(key.remoteJid, key.id);
-                return msg?.message;
-            }
-            return {
-                conversation: "Hello World",
-            };
-        }
-
+        // Handle Incoming Messages
         Matrix.ev.on("messages.upsert", async chatUpdate => await Handler(chatUpdate, Matrix, logger));
         Matrix.ev.on("call", async (json) => await Callupdate(json, Matrix));
         Matrix.ev.on("group-participants.update", async (messag) => await GroupUpdate(Matrix, messag));
 
-        if (config.MODE === "public") {
-            Matrix.public = true;
-        } else if (config.MODE === "private") {
-            Matrix.public = false;
-        }
-
+        // Check Baileys connections
         Matrix.ev.on("connection.update", async update => {
             const { connection, lastDisconnect } = update;
-            console.log("Connection Update:", update);
 
             if (connection === "close") {
                 let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-                if (reason === DisconnectReason.connectionClosed) {
-                    console.log(chalk.red("[😩] Connection closed, reconnecting."));
-                    start();
-                } else if (reason === DisconnectReason.connectionLost) {
-                    console.log(chalk.red("[🤕] Connection Lost from Server, reconnecting."));
-                    start();
-                } else if (reason === DisconnectReason.loggedOut) {
-                    console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
-                    process.exit(1);
-                } else if (reason === DisconnectReason.restartRequired) {
-                    console.log(chalk.blue("[♻️] Server Restarting."));
-                    start();
-                } else if (reason === DisconnectReason.timedOut) {
-                    console.log(chalk.red("[⏳] Connection Timed Out, Trying to Reconnect."));
-                    start();
-                } else {
-                    console.error("[🚫️] Something Went Wrong: Failed to Make Connection", reason);
-                    process.exit(1);
+                switch (reason) {
+                    case DisconnectReason.connectionClosed:
+                        console.log(chalk.red("[😩] Connection closed, reconnecting."));
+                        start();
+                        break;
+                    case DisconnectReason.connectionLost:
+                        console.log(chalk.red("[🤕] Connection Lost from Server, reconnecting."));
+                        start();
+                        break;
+                    case DisconnectReason.loggedOut:
+                        console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
+                        if (fs.existsSync(sessionFilePath)) {
+                            fs.unlinkSync(sessionFilePath);
+                        }
+                        process.exit();
+                        break;
+                    case DisconnectReason.restartRequired:
+                        console.log(chalk.blue("[♻️] Server Restarting."));
+                        start();
+                        break;
+                    case DisconnectReason.timedOut:
+                        console.log(chalk.red("[⏳] Connection Timed Out, Trying to Reconnect."));
+                        start();
+                        break;
+                    default:
+                        console.log(chalk.red("[🚫️] Something Went Wrong: Failed to Make Connection"));
+                        process.exit();
                 }
             }
 
@@ -187,7 +131,8 @@ async function start() {
                 }
             }
         });
-
+        
+        // Auto reaction feature
         Matrix.ev.on('messages.upsert', async chatUpdate => {
             try {
                 const mek = chatUpdate.messages[0];
@@ -202,6 +147,7 @@ async function start() {
                 console.error('Error during auto reaction:', err);
             }
         });
+
     } catch (error) {
         console.error('Critical Error:', error);
         process.exit(1);
@@ -214,6 +160,6 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
