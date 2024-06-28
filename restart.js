@@ -10,10 +10,15 @@ function startServer() {
     });
 
     server.on('exit', (code) => {
+        console.log(`Server exited with code ${code}`);
         if (code !== 0) {
             console.log('Server crashed. Restarting...');
             startServer();
         }
+    });
+
+    server.on('error', (err) => {
+        console.error('Failed to start server:', err);
     });
 }
 
