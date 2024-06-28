@@ -8,7 +8,12 @@ const getUptime = () => {
   const minutes = Math.floor((uptimeSeconds % 3600) / 60);
   const seconds = Math.floor(uptimeSeconds % 60);
 
-  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  return {
+    days,
+    hours,
+    minutes,
+    seconds,
+  };
 };
 
 // Function to measure ping
@@ -31,7 +36,7 @@ const serverStatusCommand = async (m, Matrix) => {
 
     try {
       // Create the status message
-      const statusMessage = `_Ethix-MD Status_\n\n📅 Uptime: ${uptime}\n📡 Ping: ${ping}ms\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
+      const statusMessage = `_Ethix-MD Status_\n\n*📅 Uptime:*\n*📆 ${uptime.days} Day(s)*\n*🕰️ ${uptime.hours} Hour(s)*\n*⏳ ${uptime.minutes} Minute(s)*\n*⏲️ ${uptime.seconds} Second(s)*\n\n_📡 Ping: ${ping}ms_\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
 
       await Matrix.sendMessage(m.from, { text: statusMessage }, { quoted: m });
     } catch (error) {
