@@ -13,13 +13,13 @@ const alive = async (m, Matrix) => {
     if (['alive', 'uptime', 'runtime'].includes(cmd)) {
 
   const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
-_______________________
+_________________________________________
 
 *📆 ${days} Day*
 *🕰️ ${hours} Hour*
 *⏳ ${minutes} Minute*
 *⏲️ ${seconds} Second*
-_______________________
+_________________________________________
 `;
 
   const buttons = [
