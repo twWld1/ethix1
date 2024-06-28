@@ -39,22 +39,22 @@ _______________________
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-              {
+              proto.Message.InteractiveMessage.NativeFlowMessage.Button.create({
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Menu\",\"id\":\".menu\"}"
-              },
-              {
+              }),
+              proto.Message.InteractiveMessage.NativeFlowMessage.Button.create({
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Ping\",\"id\":\".ping\"}"
-              }
+              })
             ]
           })
         })
       }
     }
-  }}));
+  }));
 
-  await conn.relayMessage(msg.key.remoteJid, msg.message, {
+  await conn.relayMessage(m.from, msg.message, {
     messageId: msg.key.id
   });
 };
