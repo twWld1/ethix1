@@ -20,8 +20,8 @@ const instaDownload = async (m, Matrix) => {
       const response = await axios.get(apiUrl);
       const result = response.data;
 
-      if (result.status && result.data) {
-        const mediaUrl = result.data.url_download; // Use low quality URL as default
+      if (result.success && result.data && result.data.length > 0) {
+        const mediaUrl = result.data[0].url_download; // Use the first media URL from the array
         const caption = "© Powered By Ethix-MD";
 
         await Matrix.sendMedia(m.from, mediaUrl, 'file', caption, m);
