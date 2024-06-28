@@ -30,13 +30,13 @@ const serverStatusCommand = async (m, Matrix) => {
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
 
-  if (['alive', 'uptime', 'runtime', 'ping'].includes(cmd)) {
+  if (['alive', 'uptime', 'runtime'].includes(cmd)) {
     const uptime = getUptime();
     const ping = await measurePing();
 
     try {
       // Create the status message
-      const statusMessage = `_Ethix-MD Status_\n\n*📆 ${uptime.days} Day*\n\nn*🕰️ ${uptime.hours} Hour*\n\nn*⏳ ${uptime.minutes} Minute*\n\n*⏲️ ${uptime.seconds} Second*\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
+      const statusMessage = `_Ethix-MD Status_\n\n*📆 ${uptime.days} Day*\n\n*🕰️ ${uptime.hours} Hour*\n\n*⏳ ${uptime.minutes} Minute*\n\n*⏲️ ${uptime.seconds} Second*\n\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`;
 
       await Matrix.sendMessage(m.from, { text: statusMessage }, { quoted: m });
     } catch (error) {
