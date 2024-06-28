@@ -39,13 +39,14 @@ _______________________
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-              proto.Message.InteractiveMessage.NativeFlowMessage.Button.create({
+              {
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Menu\",\"id\":\".menu\"}"
-              }),
-              proto.Message.InteractiveMessage.NativeFlowMessage.Button.create({
+              },
+                {
                 name: "quick_reply",
                 buttonParamsJson: "{\"display_text\":\"Ping\",\"id\":\".ping\"}"
+          }
               })
             ]
           })
