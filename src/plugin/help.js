@@ -319,8 +319,8 @@ const test = async (m, Matrix) => {
             },
             message: {
                 contactMessage: {
-                    displayName: `MATRIX-MD`,
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:'MATRIX'\nitem1.TEL;waid=${
+                    displayName: `Ethix-MD`,
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:'Ethix-MD'\nitem1.TEL;waid=${
                         m.sender.split("@")[0]
                     }:${
                         m.sender.split("@")[0]
@@ -332,10 +332,15 @@ const test = async (m, Matrix) => {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: fgg
 });
@@ -366,10 +371,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -427,10 +437,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -461,10 +476,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -492,10 +512,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -515,10 +540,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -541,10 +571,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -568,10 +603,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
@@ -596,10 +636,15 @@ await Matrix.sendMessage(m.from, {
   image: fs.readFileSync('./src/ethix.jpg'), 
   caption: str, 
   contextInfo: {
-    mentionedJid: [m.sender], 
-    forwardingScore: 9999,
-    isForwarded: true,
-  }
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
+              }
 }, {
   quoted: m
 });
