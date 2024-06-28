@@ -174,15 +174,7 @@ const test = async (m, Matrix) => {
                         "title":"🥏 𝚌𝚘𝚗𝚟𝚎𝚛𝚝𝚎𝚛 𝚖𝚎𝚗𝚞",
                         "description":"🛷 𝐒𝚮𝚯𝐖 𝚳𝚵 𝐂𝚯𝚴𝛁𝚵𝚪𝚻𝚵𝚪 𝚳𝚵𝚴𝐔",
                         "id":"Converter Menu"
-                      },
-                      {
-                "name": "quick_reply",
-                "buttonParamsJson": "{\"display_text\":\"PING\",\"id\":\".ping\"}"
-              },
-              {
-                "name": "quick_reply",
-                "buttonParamsJson": "{\"display_text\":\"ALIVE\",\"id\":\".alive\"}"
-              }
+                      }
                     ]}
                   ]}`
                 },
