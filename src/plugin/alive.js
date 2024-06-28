@@ -7,6 +7,10 @@ const alive = async (m, Matrix) => {
   const hours = Math.floor((uptimeSeconds % (24 * 3600)) / 3600);
   const minutes = Math.floor((uptimeSeconds % 3600) / 60);
   const seconds = Math.floor(uptimeSeconds % 60);
+  
+  const prefix = /^[\\/!#.]/gi.test(m.body) ? m.body.match(/^[\\/!#.]/gi)[0] : '/';
+  const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).toLowerCase() : '';
+    if (['alive', 'uptime', 'runtime'].includes(cmd)) {
 
   const uptimeMessage = `*🤖 ETHIX-MD Status Overview*
 _______________________
@@ -71,6 +75,7 @@ _______________________
   await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
     messageId: msg.key.id
   });
+    }
 };
 
 export default alive;
