@@ -16,7 +16,7 @@ const downloadAndSendMedia = async (m, Matrix) => {
     const domain = urlObj.hostname.replace('www.', '');
 
     if (supportedDomains.some(d => domain.includes(d))) {
-      const apiUrl = `https://aiodownloader.onrender.com/download?url=${encodeURIComponent(text)}`;
+      const apiUrl = `https://ethixdl-003a39444563.herokuapp.com/download?url=${encodeURIComponent(text)}`;
       const res = await fetch(apiUrl);
       const result = await res.json();
 
