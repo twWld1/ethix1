@@ -171,7 +171,7 @@ async function start() {
                     start();
                 } else {
                     console.error("[🚫️] Something Went Wrong: Failed to Make Connection", reason);
-                    process.exit();
+                    process.restart();
                 }
             }
 
