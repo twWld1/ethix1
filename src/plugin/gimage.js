@@ -11,7 +11,7 @@ const imageCommand = async (m, sock) => {
 
   const validCommands = ['image', 'img', 'gimage'];
 
-   if (validCommands.includes(cmd)) {
+  if (validCommands.includes(cmd)) {
     if (!query) {
       return sock.sendMessage(m.from, { text: `Usage: ${prefix + cmd} black cats` });
     }
@@ -19,6 +19,11 @@ const imageCommand = async (m, sock) => {
     try {
       await m.React("📥");
       const response = await axios.get(`https://aemt.me/googleimage?query=${encodeURIComponent(query)}`);
+      
+      if (!response.data || !response.data.result) {
+        return sock.sendMessage(m.from, { text: 'No images found for your search query.' });
+      }
+
       const results = response.data.result.slice(0, 5); // Get the top 5 images
 
       if (results.length === 0) {
@@ -27,8 +32,8 @@ const imageCommand = async (m, sock) => {
 
       for (const imageUrl of results) {
         await sleep(500);
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        const imageBuffer = Buffer.from(response.data, 'binary');
+        const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const imageBuffer = Buffer.from(imageResponse.data, 'binary');
 
         await sock.sendMessage(m.from, { image: imageBuffer, caption: '' }, { quoted: m });
         await m.React("✅");
