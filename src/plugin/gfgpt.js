@@ -1,5 +1,4 @@
-import { writeFile } from "fs/promises";
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 import fetch from 'node-fetch'; // Make sure to use node-fetch
 
@@ -10,13 +9,10 @@ const chatHistoryFile = path.resolve(__dirname, '../mistral_history.json');
 
 const mistralSystemPrompt = "you are a good assistant";
 
-// Load chat history from file
-let chatHistory = readChatHistoryFromFile();
-
 // Utility function to read chat history from file
-function readChatHistoryFromFile() {
+async function readChatHistoryFromFile() {
     try {
-        const data = fs.readFileSync(chatHistoryFile, "utf-8");
+        const data = await fs.readFile(chatHistoryFile, "utf-8");
         return JSON.parse(data);
     } catch (err) {
         return {};
@@ -24,12 +20,16 @@ function readChatHistoryFromFile() {
 }
 
 // Utility function to write chat history to file
-function writeChatHistoryToFile() {
-    fs.writeFileSync(chatHistoryFile, JSON.stringify(chatHistory, null, 2));
+async function writeChatHistoryToFile(chatHistory) {
+    try {
+        await fs.writeFile(chatHistoryFile, JSON.stringify(chatHistory, null, 2));
+    } catch (err) {
+        console.error('Error writing chat history to file:', err);
+    }
 }
 
 // Utility function to update chat history
-function updateChatHistory(sender, message) {
+async function updateChatHistory(chatHistory, sender, message) {
     // If this is the first message from the sender, create a new array for the sender
     if (!chatHistory[sender]) {
         chatHistory[sender] = [];
@@ -40,21 +40,22 @@ function updateChatHistory(sender, message) {
     if (chatHistory[sender].length > 20) {
         chatHistory[sender].shift();
     }
-    writeChatHistoryToFile(); // Save the updated chat history to file
+    await writeChatHistoryToFile(chatHistory); // Save the updated chat history to file
 }
 
 // Utility function to delete user's chat history
-function deleteChatHistory(userId) {
+async function deleteChatHistory(chatHistory, userId) {
     delete chatHistory[userId];
-    writeChatHistoryToFile(); // Save the updated chat history to file
+    await writeChatHistoryToFile(chatHistory); // Save the updated chat history to file
 }
 
 const mistral = async (m, Matrix) => {
+    const chatHistory = await readChatHistoryFromFile();
     const text = m.body.toLowerCase();
 
     if (text === "/forget") {
         // Delete the user's chat history
-        deleteChatHistory(m.sender);
+        await deleteChatHistory(chatHistory, m.sender);
         await Matrix.sendMessage(m.from, { text: 'Conversation deleted successfully' }, { quoted: m });
         // Return to exit the function
         return;
@@ -65,9 +66,9 @@ const mistral = async (m, Matrix) => {
     const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
     const prompt = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
     
-            const validCommands = ['gf'];
+    const validCommands = ['gf'];
 
-  if (validCommands.includes(cmd)) {
+    if (validCommands.includes(cmd)) {
         if (!prompt) {
             await Matrix.sendMessage(m.from, { text: 'Please give me a prompt' }, { quoted: m });
             return;
@@ -102,8 +103,8 @@ const mistral = async (m, Matrix) => {
 
             const responseData = await response.json();
 
-            updateChatHistory(m.sender, { role: "user", content: prompt });
-            updateChatHistory(m.sender, { role: "assistant", content: responseData.result.response });
+            await updateChatHistory(chatHistory, m.sender, { role: "user", content: prompt });
+            await updateChatHistory(chatHistory, m.sender, { role: "assistant", content: responseData.result.response });
 
             await Matrix.sendMessage(m.from, { text: responseData.result.response }, { quoted: m });
         } catch (err) {
