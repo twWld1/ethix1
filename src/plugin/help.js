@@ -72,7 +72,12 @@ const test = async (m, Matrix) => {
   
   const prefix = /^[\\/!#.]/gi.test(m.body) ? m.body.match(/^[\\/!#.]/gi)[0] : '.';
         const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).toLowerCase() : '';
-        const mode = process.env.MODE;
+        let Matrix = {
+    public: true // or false
+};
+
+let mode = Matrix.public ? 'public' : 'private';
+
         const validCommands = ['list', 'help', 'menu'];
 
   if (validCommands.includes(cmd)) {
