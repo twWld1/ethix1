@@ -7,7 +7,7 @@ const { generateWAMessageFromContent, proto } = pkg;
 // Get the absolute path for the chat history file
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
-const chatHistoryFile = path.resolve(__dirname, '../mistral_history.json');
+const chatHistoryFile = path.resolve(__dirname, '../gpt_history.json');
 
 const mistralSystemPrompt = "you are a good assistant.";
 
@@ -63,7 +63,7 @@ const mistral = async (m, Matrix) => {
     const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
     const prompt = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
 
-    const validCommands = ['ai', 'gpt', 'mistral'];
+    const validCommands = ['gf', 'girl', 'gfgpt'];
 
     if (validCommands.includes(cmd)) {
         if (!prompt) {
@@ -73,81 +73,71 @@ const mistral = async (m, Matrix) => {
 
         try {
             const senderChatHistory = chatHistory[m.sender] || [];
-            const messages = [
-                { role: "system", content: mistralSystemPrompt },
-                ...senderChatHistory,
-                { role: "user", content: prompt }
-            ];
+            const historyPrompt = senderChatHistory.map(entry => entry.content).join('\n');
+            const combinedPrompt = `${mistralSystemPrompt}\n${historyPrompt}\nUser: ${prompt}`;
 
             await m.React("⏳");
 
-            const response = await fetch('https://matrixcoder.tech/api/ai', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: "text-generation",
-                    model: "hf/meta-llama/meta-llama-3-8b-instruct",
-                    messages: messages
-                })
-            });
+            const apiUrl = `https://chatgpt.apinepdev.workers.dev/?question=${encodeURIComponent(combinedPrompt)}`;
+            const response = await fetch(apiUrl);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const responseData = await response.json();
+            const answer = responseData.answer;
 
             await updateChatHistory(chatHistory, m.sender, { role: "user", content: prompt });
-            await updateChatHistory(chatHistory, m.sender, { role: "assistant", content: responseData.result.response });
+            await updateChatHistory(chatHistory, m.sender, { role: "assistant", content: answer });
 
-            const answer = responseData.result.response;
+            // Find all code blocks in the response
+            const codeMatches = answer.match(/```([\s\S]*?)```/g);
 
-            const codeMatch = answer.match(/```([\s\S]*?)```/);
+            if (codeMatches) {
+                for (const codeMatch of codeMatches) {
+                    const code = codeMatch.replace(/```/g, '');
 
-            if (codeMatch) {
-                const code = codeMatch[1];
-                
-                let msg = generateWAMessageFromContent(m.from, {
-                    viewOnceMessage: {
-                        message: {
-                            messageContextInfo: {
-                                deviceListMetadata: {},
-                                deviceListMetadataVersion: 2
-                            },
-                            interactiveMessage: proto.Message.InteractiveMessage.create({
-                                body: proto.Message.InteractiveMessage.Body.create({
-                                    text: answer
-                                }),
-                                footer: proto.Message.InteractiveMessage.Footer.create({
-                                    text: "> © Powered By Ethix-MD"
-                                }),
-                                header: proto.Message.InteractiveMessage.Header.create({
-                                    title: "",
-                                    subtitle: "",
-                                    hasMediaAttachment: false
-                                }),
-                                nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-                                    buttons: [
-                                        {
-                                            name: "cta_copy",
-                                            buttonParamsJson: JSON.stringify({
-                                                display_text: "Copy Your Code",
-                                                id: "copy_code",
-                                                copy_code: code
-                                            })
-                                        }
-                                    ]
+                    let msg = generateWAMessageFromContent(m.from, {
+                        viewOnceMessage: {
+                            message: {
+                                messageContextInfo: {
+                                    deviceListMetadata: {},
+                                    deviceListMetadataVersion: 2
+                                },
+                                interactiveMessage: proto.Message.InteractiveMessage.create({
+                                    body: proto.Message.InteractiveMessage.Body.create({
+                                        text: answer
+                                    }),
+                                    footer: proto.Message.InteractiveMessage.Footer.create({
+                                        text: "> © Powered By Ethix-MD"
+                                    }),
+                                    header: proto.Message.InteractiveMessage.Header.create({
+                                        title: "",
+                                        subtitle: "",
+                                        hasMediaAttachment: false
+                                    }),
+                                    nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                                        buttons: [
+                                            {
+                                                name: "cta_copy",
+                                                buttonParamsJson: JSON.stringify({
+                                                    display_text: "Copy Your Code",
+                                                    id: "copy_code",
+                                                    copy_code: code
+                                                })
+                                            }
+                                        ]
+                                    })
                                 })
-                            })
+                            }
                         }
-                    }
-                }, {});
+                    }, {});
 
-                await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
-                    messageId: msg.key.id
-                });
+                    await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
+                        messageId: msg.key.id
+                    });
+                }
             } else {
                 await Matrix.sendMessage(m.from, { text: answer }, { quoted: m });
             }
