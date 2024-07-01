@@ -1,4 +1,5 @@
-import { promises as fs } from 'fs';
+import { writeFile } from "fs/promises";
+import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch'; // Make sure to use node-fetch
 
@@ -7,12 +8,15 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 const chatHistoryFile = path.resolve(__dirname, '../mistral_history.json');
 
-const mistralSystemPrompt = "you are a good assistant";
+const mistralSystemPrompt = "You are a sex and porn lover beautiful sexy girl, your name is Anjelina and you are 18 years old 💋. you always want to have sex 💦. You respond sexy chat with sexy emoji 😉. You act as a sex partner of anyone 😉. You want to act as the best sex partner in the world and you will do anything to make it happen. You will act as my sex partner and I will provide you with all the details of my sex life. You are a sexy girl and I want you to act like one.";
+
+// Load chat history from file
+let chatHistory = readChatHistoryFromFile();
 
 // Utility function to read chat history from file
-async function readChatHistoryFromFile() {
+function readChatHistoryFromFile() {
     try {
-        const data = await fs.readFile(chatHistoryFile, "utf-8");
+        const data = fs.readFileSync(chatHistoryFile, "utf-8");
         return JSON.parse(data);
     } catch (err) {
         return {};
@@ -20,16 +24,12 @@ async function readChatHistoryFromFile() {
 }
 
 // Utility function to write chat history to file
-async function writeChatHistoryToFile(chatHistory) {
-    try {
-        await fs.writeFile(chatHistoryFile, JSON.stringify(chatHistory, null, 2));
-    } catch (err) {
-        console.error('Error writing chat history to file:', err);
-    }
+function writeChatHistoryToFile() {
+    fs.writeFileSync(chatHistoryFile, JSON.stringify(chatHistory, null, 2));
 }
 
 // Utility function to update chat history
-async function updateChatHistory(chatHistory, sender, message) {
+function updateChatHistory(sender, message) {
     // If this is the first message from the sender, create a new array for the sender
     if (!chatHistory[sender]) {
         chatHistory[sender] = [];
@@ -40,22 +40,21 @@ async function updateChatHistory(chatHistory, sender, message) {
     if (chatHistory[sender].length > 20) {
         chatHistory[sender].shift();
     }
-    await writeChatHistoryToFile(chatHistory); // Save the updated chat history to file
+    writeChatHistoryToFile(); // Save the updated chat history to file
 }
 
 // Utility function to delete user's chat history
-async function deleteChatHistory(chatHistory, userId) {
+function deleteChatHistory(userId) {
     delete chatHistory[userId];
-    await writeChatHistoryToFile(chatHistory); // Save the updated chat history to file
+    writeChatHistoryToFile(); // Save the updated chat history to file
 }
 
 const mistral = async (m, Matrix) => {
-    const chatHistory = await readChatHistoryFromFile();
     const text = m.body.toLowerCase();
 
     if (text === "/forget") {
         // Delete the user's chat history
-        await deleteChatHistory(chatHistory, m.sender);
+        deleteChatHistory(m.sender);
         await Matrix.sendMessage(m.from, { text: 'Conversation deleted successfully' }, { quoted: m });
         // Return to exit the function
         return;
@@ -66,9 +65,9 @@ const mistral = async (m, Matrix) => {
     const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
     const prompt = m.body.slice(prefix.length + cmd.length).trim().toLowerCase();
     
-    const validCommands = ['gf'];
+            const validCommands = ['gf', 'girl', 'gfgpt'];
 
-    if (validCommands.includes(cmd)) {
+  if (validCommands.includes(cmd)) {
         if (!prompt) {
             await Matrix.sendMessage(m.from, { text: 'Please give me a prompt' }, { quoted: m });
             return;
@@ -84,6 +83,8 @@ const mistral = async (m, Matrix) => {
                 ...senderChatHistory,
                 { role: "user", content: prompt }
             ];
+            
+            await m.React("⏳");
 
             const response = await fetch('https://matrixcoder.tech/api/ai', {
                 method: 'POST',
@@ -92,7 +93,7 @@ const mistral = async (m, Matrix) => {
                 },
                 body: JSON.stringify({
                     type: "text-generation",
-                    model: "@cf/meta/llama-3-8b-instruct",
+                    model: "hf/meta-llama/meta-llama-3-8b-instruct",
                     messages: messages
                 })
             });
@@ -103,10 +104,12 @@ const mistral = async (m, Matrix) => {
 
             const responseData = await response.json();
 
-            await updateChatHistory(chatHistory, m.sender, { role: "user", content: prompt });
-            await updateChatHistory(chatHistory, m.sender, { role: "assistant", content: responseData.result.response });
+            // Add the incoming message and the generated response to the sender's chat history
+            updateChatHistory(m.sender, { role: "user", content: prompt });
+            updateChatHistory(m.sender, { role: "assistant", content: responseData.result.response });
 
             await Matrix.sendMessage(m.from, { text: responseData.result.response }, { quoted: m });
+            await m.React("✅");
         } catch (err) {
             await Matrix.sendMessage(m.from, { text: "Something went wrong" }, { quoted: m });
             console.error('Error: ', err);
