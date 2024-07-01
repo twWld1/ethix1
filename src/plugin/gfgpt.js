@@ -93,7 +93,7 @@ const mistral = async (m, Matrix) => {
                 },
                 body: JSON.stringify({
                     type: "text-generation",
-                    model: "cf/meta/llama-3-8b-instruct",
+                    model: "hf/mistral/mistral-7b-instruct-v0.2",
                     messages: messages
                 })
             });
