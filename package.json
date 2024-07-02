@@ -5,8 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "pm2 start src/index.js --deep-monitoring --attach --name Ethix-MD",
+    "stop": "pm2 stop Ethix-MD",
+    "restart": "pm2 restart Ethix-MD"
   },
   "keywords": ["ethix-md", "whatsapp-bot", "whatsapp md bot"],
   "author": "Ethix-Xsid",
