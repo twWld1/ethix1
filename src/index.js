@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
 import {
     makeWASocket,
     Browsers,
@@ -52,93 +53,77 @@ const store = makeInMemoryStore({
     })
 });
 
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
+
+const sessionDir = path.join(__dirname, 'session');
+const credsPath = path.join(sessionDir, 'creds.json');
+
+if (!fs.existsSync(sessionDir)) {
+    fs.mkdirSync(sessionDir, { recursive: true });
+}
+
+async function downloadSessionData() {
+    if (!config.SESSION_ID) {
+        console.error('Please add your session to SESSION_ID env !!');
+        process.exit(1);
+    }
+    const sessdata = config.SESSION_ID.split("Ethix-MD&")[1];
+    const url = `https://pastebin.com/raw/${sessdata}`;
+    try {
+        const response = await axios.get(url);
+        const data = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        await fs.promises.writeFile(credsPath, data);
+        console.log("🔒 Session Successfully Loaded !!");
+    } catch (error) {
+        console.error('Failed to download session data:', error);
+        process.exit(1);
+    }
+}
+
+if (!fs.existsSync(credsPath)) {
+    downloadSessionData();
+}
+
 async function start() {
     try {
-        if (!config.SESSION_ID) {
-            useQR = true;
-            isSessionPutted = false;
-        } else {
-            useQR = false;
-            isSessionPutted = true;
-        }
-
-        let { state, saveCreds } = await useMultiFileAuthState(sessionName);
-        let { version, isLatest } = await fetchLatestBaileysVersion();
-        console.log(chalk.red("CODED BY GOUTAM KUMAR & Ethix-Xsid"));
-        console.log(chalk.green(`using WA v${version.join(".")}, isLatest: ${isLatest}`));
-
-        const Device = (os.platform() === 'win32') ? 'Windows' : (os.platform() === 'darwin') ? 'MacOS' : 'Linux';
+        const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+        const { version, isLatest } = await fetchLatestBaileysVersion();
+        console.log(`🤖 Ethix-MD using WA v${version.join('.')}, isLatest: ${isLatest}`);
+        
         const Matrix = makeWASocket({
             version,
             logger: pino({ level: 'silent' }),
-            printQRInTerminal: useQR,
-            browser: [Device, 'chrome', '121.0.6167.159'],
-            patchMessageBeforeSending: (message) => {
-                const requiresPatch = !!(
-                    message.buttonsMessage ||
-                    message.templateMessage ||
-                    message.listMessage
-                );
-                if (requiresPatch) {
-                    message = {
-                        viewOnceMessage: {
-                            message: {
-                                messageContextInfo: {
-                                    deviceListMetadataVersion: 2,
-                                    deviceListMetadata: {},
-                                },
-                                ...message,
-                            },
-                        },
-                    };
-                }
-                return message;
-            },
-            auth: {
-                creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
-            },
+            printQRInTerminal: true,
+            browser: ["Ethix-MD", "safari", "3.3"],
+            auth: state,
             getMessage: async (key) => {
                 if (store) {
                     const msg = await store.loadMessage(key.remoteJid, key.id);
                     return msg.message || undefined;
                 }
-                return {
-                    conversation: "Hello World"
-                };
-            },
-            markOnlineOnConnect: true,
-            generateHighQualityLinkPreview: true,
-            defaultQueryTimeoutMs: undefined,
-            msgRetryCounterCache
+                return { conversation: "Ethix-MD Nonstop Testing" };
+            }
         });
-        store?.bind(Matrix.ev);
 
-        if (!Matrix.authState.creds.registered && isSessionPutted) {
-            const sessionID = config.SESSION_ID.split('Ethix-MD&')[1];
-            const pasteUrl = `https://pastebin.com/raw/${sessionID}`;
-            const response = await fetch(pasteUrl);
-            const text = await response.text();
-            if (typeof text === 'string') {
-                if (!fs.existsSync('./session/creds.json')) {
-                    fs.writeFileSync('./session/creds.json', text);
-                    console.log('session file created');
-                    await start();
+        Matrix.ev.on('connection.update', (update) => {
+            const { connection, lastDisconnect } = update;
+            if (connection === 'close') {
+                if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+                    start();
+                }
+            } else if (connection === 'open') {
+                if (initialConnection) {
+                    console.log(chalk.green("😃 Integration Successful️ ✅"));
+                    Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
+                    initialConnection = false;
                 } else {
-                    console.log('session file already exists');
+                    console.log(chalk.blue("♻️ Connection reestablished after restart."));
                 }
             }
-        }
+        });
 
-        async function getMessage(key) {
-            if (store) {
-                const msg = await store.loadMessage(key.remoteJid, key.id);
-                return msg?.message;
-            }
-            return {
-                conversation: "Hello World",
-            };
-        }
+        Matrix.ev.on('creds.update', saveCreds);
 
         Matrix.ev.on("messages.upsert", async chatUpdate => await Handler(chatUpdate, Matrix, logger));
         Matrix.ev.on("call", async (json) => await Callupdate(json, Matrix));
@@ -150,44 +135,7 @@ async function start() {
             Matrix.public = false;
         }
 
-        Matrix.ev.on("connection.update", async update => {
-            const { connection, lastDisconnect } = update;
-            if (connection === "close") {
-                let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-                if (reason === DisconnectReason.connectionClosed) {
-                    console.log(chalk.red("[😩] Connection closed, reconnecting."));
-                    start();
-                } else if (reason === DisconnectReason.connectionLost) {
-                    console.log(chalk.red("[🤕] Connection Lost from Server, reconnecting."));
-                    start();
-                } else if (reason === DisconnectReason.loggedOut) {
-                    console.log(chalk.red("[😭] Device Logged Out, Please Delete Session and Scan Again."));
-                    process.exit();
-                } else if (reason === DisconnectReason.restartRequired) {
-                    console.log(chalk.blue("[♻️] Server Restarting."));
-                    start();
-                } else if (reason === DisconnectReason.timedOut) {
-                    console.log(chalk.red("[⏳] Connection Timed Out, Trying to Reconnect."));
-                    start();
-                } else {
-                    console.error("[🚫️] Something Went Wrong: Failed to Make Connection", reason);
-                }
-            }
-
-            if (connection === "open") {
-                if (initialConnection) {
-                    console.log(chalk.green("😃 Integration Successful️ ✅"));
-                    Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
-                    initialConnection = false;
-                } else {
-                    console.log(chalk.blue("♻️ Connection reestablished after restart."));
-                }
-            }
-        });
-
-    Matrix.ev.on('creds.update', saveCreds);
-
-        Matrix.ev.on('messages.upsert', async chatUpdate => {
+        Matrix.ev.on('messages.upsert', async (chatUpdate) => {
             try {
                 const mek = chatUpdate.messages[0];
                 if (!mek.key.fromMe && config.AUTO_REACT) {
