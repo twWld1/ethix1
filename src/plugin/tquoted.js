@@ -1,4 +1,3 @@
-
 const quotedMessage = async (m, gss) => {
   try {
     const prefixMatch = m.body.match(/^[\\/!#.]/);
