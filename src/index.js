@@ -26,6 +26,7 @@ import axios from 'axios';
 import fetch from 'node-fetch';
 import * as os from 'os';
 import config from '../config.cjs';
+import { smsg } from '../lib/myfunc.cjs';
 import pkg from '../lib/autoreact.cjs';
 const { emojis, doReact } = pkg;
 
@@ -105,6 +106,8 @@ async function start() {
                 return { conversation: "Ethix-MD Nonstop Testing" };
             }
         });
+        
+        Matrix.serializeM = (m) => smsg(Matrix, m, store)
 
         Matrix.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect } = update;
