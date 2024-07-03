@@ -1,3 +1,4 @@
+
 const quotedMessage = async (m, gss) => {
   try {
     const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -9,8 +10,7 @@ const quotedMessage = async (m, gss) => {
     if (validCommands.includes(cmd)) {
       if (!m.quoted) return m.reply('reply to the message!');
 
-      const quotedObj = await require('../../lib/myfunc').getQuotedObj(m);
-      let wokwol = await gss.serialize(quotedObj);
+      let wokwol = await gss.serialize(await m.getQuotedObj());
       if (!wokwol.quoted) return m.reply('the replied message does not contain a reply');
       await wokwol.quoted.copyForward(m.from, true);
     }
