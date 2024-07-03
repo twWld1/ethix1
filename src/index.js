@@ -107,7 +107,7 @@ async function start() {
             }
         });
         
-        Matrix.serializeM = (m) => smsg(Matrix, m, store)
+        Matrix.serialize = (m) => smsg(Matrix, m, store)
 
         Matrix.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect } = update;
