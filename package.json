@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "pm2 start src/index.js --deep-monitoring --attach --name Ethix-MD",
+    "start": "pm2 start src/index.js --deep-monitoring --attach --name Ethix-MD"
   },
   "keywords": ["ethix-md", "whatsapp-bot", "whatsapp md bot"],
   "author": "Ethix-Xsid",
