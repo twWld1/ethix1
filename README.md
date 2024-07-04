@@ -59,17 +59,7 @@
 
 3. ## Deploy to Koyeb ↓
 
-<a href="https://app.koyeb.com/services/deploy/?type=git&repository=github.com%2FEthix-Xsid%2FEthix-MD&branch=main&name=ethix-md&builder=dockerfile&env%5BAUTO_BLOCK=false%5D=&env%5BSESSION_ID%5D=your%20sessionid%20here&env%5BMODE%5D=public&env=%5BAUTO_READ%5D%3Dfalse&env%5BAUTO_STATUS_SEEN%5D=true" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" alt="Deploy bot"/></a>
-
-
-4. ### DEPLOY TO RENDER
-
-1. If you don't have an account on Render, create one.
-    <br>
-    <a href='https://dashboard.render.com/register' target="_blank"><img alt='Render' src='https://img.shields.io/badge/-Create-black?style=for-the-badge&logo=render&logoColor=white'/></a>
-2. Deploy using Render.
-    <br>
-    <a href='https://render.com/deploy' target="_blank"><img alt='DEPLOY' src='https://img.shields.io/badge/-DEPLOY-black?style=for-the-badge&logo=render&logoColor=white'/></a>
+<a href="https://app.koyeb.com/services/deploy/?type=git&repository=github.com%2FEthix-Xsid%2FEthix-MD&branch=main&name=ethix-md&builder=dockerfile&env%5BAUTO_BLOCK=false%5D=&env%5BSESSION_ID%5D=your%20sessionid%20here&env%5BMODE%5D=public&env=%5BAUTO_READ%5D%3Dfalse&env%5BAUTO_STATUS_SEEN%5D=true" target="blank"><img align="center" src="https://i.imgur.com/PNoLtFq.png" width="30" height="20" alt="Deploy bot"/></a>
 
 
 
