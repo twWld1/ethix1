@@ -133,16 +133,16 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
         const info = await ytdl.getInfo(videoUrl);
-        let format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
+        
+        let format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasVideo && f.hasAudio);
 
-        // If the desired quality format is not found, fall back to the highest available quality
         if (!format) {
           format = info.formats
-            .filter(f => f.hasAudio)
+            .filter(f => f.hasVideo && f.hasAudio)
             .sort((a, b) => b.bitrate - a.bitrate)[0];
 
           if (!format) {
-            throw new Error(`No available format with audio for quality: ${selectedQuality.quality}`);
+            throw new Error(`No available format with audio and video for quality: ${selectedQuality.quality}`);
           }
 
           console.warn(`Desired quality ${selectedQuality.quality} not found, falling back to ${format.qualityLabel}`);
@@ -163,7 +163,7 @@ const song = async (m, Matrix) => {
           {
             contextInfo: {
               externalAdReply: {
-                showAdAttribution: false,
+                showAdAttribution: true,
                 title: selectedQuality.title,
                 body: "Ethix-MD",
                 thumbnailUrl: selectedQuality.thumbnailUrl,
@@ -171,14 +171,6 @@ const song = async (m, Matrix) => {
                 mediaType: 1,
                 renderLargerThumbnail: true
               },
-              mentionedJid: [m.sender],
-              forwardingScore: 999,
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363249960769123@newsletter',
-                newsletterName: "Ethix-MD",
-                serverMessageId: 143
-              }
             },
             quoted: m
           });
