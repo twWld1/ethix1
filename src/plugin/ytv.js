@@ -3,7 +3,7 @@ import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
 const videoMap = new Map();
-let videoIndex = 1; 
+let videoIndex = 1;
 
 const song = async (m, Matrix) => {
   let selectedListId;
@@ -24,7 +24,7 @@ const song = async (m, Matrix) => {
   const prefix = prefixMatch ? prefixMatch[0] : '/';
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
   const text = m.body.slice(prefix.length + cmd.length).trim();
-  
+
   const validCommands = ['ytv'];
 
   if (validCommands.includes(cmd)) {
@@ -35,9 +35,9 @@ const song = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
-
       const info = await ytdl.getInfo(text);
-      const formats = ytdl.filterFormats(info.formats, 'videoandaudio');
+      const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p', '1440p'];
+      const formats = qualities.map(q => ytdl.filterFormats(info.formats, format => format.qualityLabel === q && format.hasAudio && format.hasVideo)[0]).filter(Boolean);
 
       if (formats.length === 0) {
         m.reply('No downloadable formats found.');
@@ -62,7 +62,7 @@ const song = async (m, Matrix) => {
           "header": "",
           "title": `${format.qualityLabel} (${format.container}) - ${size}`,
           "description": `Bitrate: ${format.bitrate}`,
-          "id": `quality_${uniqueId}` 
+          "id": `quality_${uniqueId}`
         };
       }));
 
@@ -75,17 +75,17 @@ const song = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `𝞢𝙏𝞖𝞘𝞦-𝞛𝘿 Video Downloader\n*🔍Title:* ${videoDetails.title}\n*✍️ Author:* ${videoDetails.author}\n*🥸Views:* ${videoDetails.views}\n*👍 Likes:* ${videoDetails.likes}\n*📆 Upload Date:* ${videoDetails.uploadDate}\n*🏮 Duration:* ${videoDetails.duration}\n`
+                text: `Video Downloader\n*🔍Title:* ${videoDetails.title}\n*✍️ Author:* ${videoDetails.author}\n*🥸Views:* ${videoDetails.views}\n*👍 Likes:* ${videoDetails.likes}\n*📆 Upload Date:* ${videoDetails.uploadDate}\n*🏮 Duration:* ${videoDetails.duration}\n`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
-                text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
+                text: "© Powered By Your Service"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
                 ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
-                hasMediaAttachment: false 
+                hasMediaAttachment: false
               }),
               nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
                 buttons: [
@@ -141,13 +141,12 @@ const song = async (m, Matrix) => {
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
-          caption: `Title: ${selectedFormat.title}\nAuthor: ${selectedFormat.author}\nViews: ${selectedFormat.views}\nLikes: ${selectedFormat.likes}\nUpload Date: ${selectedFormat.uploadDate}\nDuration: ${duration}\nSize: ${size}\n\n> Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`
+          caption: `Title: ${selectedFormat.title}\nAuthor: ${selectedFormat.author}\nViews: ${selectedFormat.views}\nLikes: ${selectedFormat.likes}\nUpload Date: ${selectedFormat.uploadDate}\nDuration: ${duration}\nSize: ${size}\n\n> Powered by Your Service`
         }, { quoted: m });
       } catch (error) {
         console.error("Error fetching video details:", error);
         m.reply('Error fetching video details.');
       }
-    } else {
     }
   }
 };
