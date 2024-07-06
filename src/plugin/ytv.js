@@ -6,7 +6,16 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
-const qualities = ['144', '240', '360', '480', '720', '1080'];
+const formats = [
+  { itag: 18, container: 'mp4', quality: '360p', codecs: 'avc1.42001E, mp4a.40.2', bitrate: '696.66KB', audioBitrate: '96KB' },
+  { itag: 137, container: 'mp4', quality: '1080p', codecs: 'avc1.640028', bitrate: '4.53MB' },
+  { itag: 248, container: 'webm', quality: '1080p', codecs: 'vp9', bitrate: '2.52MB' },
+  { itag: 136, container: 'mp4', quality: '720p', codecs: 'avc1.4d4016', bitrate: '2.2MB' },
+  { itag: 247, container: 'webm', quality: '720p', codecs: 'vp9', bitrate: '1.44MB' },
+  { itag: 135, container: 'mp4', quality: '480p', codecs: 'avc1.4d4014', bitrate: '1.1MB' },
+  { itag: 134, container: 'mp4', quality: '360p', codecs: 'avc1.4d401e', bitrate: '593.26KB' },
+  { itag: 140, container: 'mp4', quality: 'audio', codecs: 'mp4a.40.2', audioBitrate: '128KB' }
+];
 
 const song = async (m, Matrix) => {
   let selectedListId;
@@ -39,7 +48,6 @@ const song = async (m, Matrix) => {
       await m.React("🕘");
 
       const info = await ytdl.getInfo(text);
-      
 
       const videoDetails = {
         title: info.videoDetails.title,
@@ -48,19 +56,19 @@ const song = async (m, Matrix) => {
         likes: info.videoDetails.likes,
         uploadDate: formatDate(info.videoDetails.uploadDate),
         duration: formatDuration(info.videoDetails.lengthSeconds),
-        thumbnailUrl: info.videoDetails.thumbnails,
+        thumbnailUrl: info.videoDetails.thumbnails[0].url,
         videoUrl: info.videoDetails.video_url
       };
-      
+
       const videoInfo = await yts({ videoId: ytdl.getURLVideoID(videoDetails.videoUrl) });
 
-      const qualityButtons = qualities.map((quality, index) => {
+      const qualityButtons = formats.map((format, index) => {
         const uniqueId = videoIndex + index;
-        videoMap.set(uniqueId, { quality, videoId: info.videoDetails.videoId, ...videoDetails });
+        videoMap.set(uniqueId, { ...format, videoId: info.videoDetails.videoId, ...videoDetails });
         return {
           "header": "",
-          "title": `${quality}`,
-          "description": `Select ${quality} quality`,
+          "title": `${format.quality} (${format.container})`,
+          "description": `Select ${format.quality} quality in ${format.container} format`,
           "id": `quality_${uniqueId}`
         };
       });
@@ -123,7 +131,7 @@ const song = async (m, Matrix) => {
       });
       await m.React("✅");
 
-      videoIndex += qualities.length;
+      videoIndex += formats.length;
     } catch (error) {
       console.error("Error processing your request:", error);
       m.reply('Error processing your request.');
@@ -136,23 +144,19 @@ const song = async (m, Matrix) => {
     if (selectedQuality) {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
-       
-        const videoStream = ytdl(videoUrl.url, { filter: 'audioandvideo', quality: 'highest' });
-      }
-        const finalVideoBuffer = await streamToBuffer(videoStream);
 
-        const duration = selectedQuality.duration;
-        const size = 'Unknown size'; 
+        const videoStream = ytdl(videoUrl, { filter: format => format.itag === selectedQuality.itag });
+
+        const finalVideoBuffer = await streamToBuffer(videoStream);
 
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
-          mimetype: 'video/mp4',
+          mimetype: selectedQuality.container === 'mp4' ? 'video/mp4' : 'video/webm',
           fileName: `${selectedQuality.title}`,
           caption: `> © Powered By Ethix-MD\n\n*${selectedQuality.quality}*`
-        },
-        {
-            quoted: m
-          });
+        }, {
+          quoted: m
+        });
       } catch (error) {
         console.error("Error fetching video details:", error);
         m.reply(`Error fetching video details: ${error.message}`);
