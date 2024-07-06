@@ -126,7 +126,7 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
         const info = await ytdl.getInfo(videoUrl);
-        const format = ytdl.chooseFormat(info.formats, { qualityLabel: selectedQuality.quality });
+        const format = info.formats.find(f => f.qualityLabel === selectedQuality.quality);
 
         if (!format) {
           throw new Error(`Format not found for quality: ${selectedQuality.quality}`);
@@ -141,7 +141,7 @@ const song = async (m, Matrix) => {
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
-          caption: `Title: ${selectedQuality.title}\nAuthor: ${selectedQuality.author}\nViews: ${selectedQuality.views}\nLikes: ${selectedQuality.likes}\nUpload Date: ${selectedQuality.uploadDate}\nDuration: ${duration}\nSize: ${size}\n\n> Powered by Your Service`
+          caption: `Title: ${selectedQuality.title}\nAuthor: ${selectedQuality.author}\nViews: ${selectedQuality.views}\nLikes: ${selectedQuality.likes}\nUpload Date: ${selectedQuality.uploadDate}\nDuration: ${duration}\nSize: ${size}\nQuality: ${selectedQuality.quality}\n\n> © Powered by Ethix-MD`
         }, { quoted: m });
       } catch (error) {
         console.error("Error fetching video details:", error);
