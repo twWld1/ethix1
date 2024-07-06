@@ -1,4 +1,5 @@
 import ytdl from 'ytdl-core';
+import yts from 'yt-search';
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
@@ -38,6 +39,7 @@ const song = async (m, Matrix) => {
       await m.React("🕘");
 
       const info = await ytdl.getInfo(text);
+      
 
       const videoDetails = {
         title: info.videoDetails.title,
@@ -49,6 +51,8 @@ const song = async (m, Matrix) => {
         thumbnailUrl: info.videoDetails.thumbnails,
         videoUrl: info.videoDetails.video_url
       };
+      
+      const videoInfo = await yts({ videoId: ytdl.getURLVideoID(videoUrl) });
 
       const qualityButtons = qualities.map((quality, index) => {
         const uniqueId = videoIndex + index;
@@ -76,7 +80,7 @@ const song = async (m, Matrix) => {
                 text: "© Powered By Ethix-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image: { url: videoDetails.thumbnailUrl } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: videoInfo.thumbnail } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
@@ -149,26 +153,7 @@ const song = async (m, Matrix) => {
           fileName: `${selectedQuality.title}`,
           caption: `> © Powered By Ethix-MD\n\n*${selectedQuality.quality}*`
         },
-          {
-            contextInfo: {
-              externalAdReply: {
-                showAdAttribution: true,
-                title: selectedQuality.title,
-                body: "Ethix-MD",
-                thumbnailUrl: selectedQuality.thumbnailUrl,
-                sourceUrl: selectedQuality.videoUrl,
-                mediaType: 1,
-                renderLargerThumbnail: true
-              },
-              mentionedJid: [m.sender],
-              forwardingScore: 999,
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363249960769123@newsletter',
-                newsletterName: "Ethix-MD",
-                serverMessageId: 143
-              }
-            },
+        {
             quoted: m
           });
       } catch (error) {
