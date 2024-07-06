@@ -1,5 +1,4 @@
 import ytdl from 'ytdl-core';
-import { spawn } from 'child_process';
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
@@ -134,51 +133,58 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
         const info = await ytdl.getInfo(videoUrl);
-        const videoFormat = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasVideo);
-        const audioFormat = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
+        let format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
 
-        if (!videoFormat || !audioFormat) {
-          throw new Error(`Format not found for quality: ${selectedQuality.quality}`);
+        // If the desired quality format is not found, fall back to the highest available quality
+        if (!format) {
+          format = info.formats
+            .filter(f => f.hasAudio)
+            .sort((a, b) => b.bitrate - a.bitrate)[0];
+
+          if (!format) {
+            throw new Error(`No available format with audio for quality: ${selectedQuality.quality}`);
+          }
+
+          console.warn(`Desired quality ${selectedQuality.quality} not found, falling back to ${format.qualityLabel}`);
         }
 
-        const videoStream = ytdl(videoUrl, { format: videoFormat });
-        const audioStream = ytdl(videoUrl, { format: audioFormat });
+        const videoStream = ytdl(videoUrl, { format });
+        const finalVideoBuffer = await streamToBuffer(videoStream);
 
-        const videoBuffer = await streamToBuffer(videoStream);
-        const audioBuffer = await streamToBuffer(audioStream);
-
-        const mergedBuffer = await mergeAudioAndVideo(audioBuffer, videoBuffer);
+        const duration = selectedQuality.duration;
+        const size = format.contentLength ? formatSize(format.contentLength) : 'Unknown size';
 
         await Matrix.sendMessage(m.from, {
-          document: mergedBuffer,
+          document: finalVideoBuffer,
           mimetype: 'video/mp4',
-          fileName: `${selectedQuality.title}.mp4`,
+          fileName: `${selectedQuality.title}`,
           caption: `> © Powered By Ethix-MD`
-        }, {
-          contextInfo: {
-            externalAdReply: {
-              showAdAttribution: false,
-              title: selectedQuality.title,
-              body: "Ethix-MD",
-              thumbnailUrl: selectedQuality.thumbnailUrl,
-              sourceUrl: selectedQuality.videoUrl,
-              mediaType: 1,
-              renderLargerThumbnail: true
+        },
+          {
+            contextInfo: {
+              externalAdReply: {
+                showAdAttribution: false,
+                title: selectedQuality.title,
+                body: "Ethix-MD",
+                thumbnailUrl: selectedQuality.thumbnailUrl,
+                sourceUrl: selectedQuality.videoUrl,
+                mediaType: 1,
+                renderLargerThumbnail: true
+              },
+              mentionedJid: [m.sender],
+              forwardingScore: 999,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363249960769123@newsletter',
+                newsletterName: "Ethix-MD",
+                serverMessageId: 143
+              }
             },
-            mentionedJid: [m.sender],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-              newsletterJid: '120363249960769123@newsletter',
-              newsletterName: "Ethix-MD",
-              serverMessageId: 143
-            }
-          },
-          quoted: m
-        });
+            quoted: m
+          });
       } catch (error) {
         console.error("Error fetching video details:", error);
-        m.reply('Error fetching video details.');
+        m.reply(`Error fetching video details: ${error.message}`);
       }
     }
   }
@@ -189,6 +195,13 @@ const formatDuration = (seconds) => {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   return `${h}h ${m}m ${s}s`;
+};
+
+const formatSize = (size) => {
+  if (size < 1024) return `${size.toFixed(2)} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+  if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
+  return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
 };
 
 const formatDate = (date) => {
@@ -205,36 +218,6 @@ const streamToBuffer = async (stream) => {
     stream.on('data', chunk => chunks.push(chunk));
     stream.on('end', () => resolve(Buffer.concat(chunks)));
     stream.on('error', reject);
-  });
-};
-
-const mergeAudioAndVideo = async (audioBuffer, videoBuffer) => {
-  return new Promise((resolve, reject) => {
-    const ffmpegProcess = spawn('ffmpeg', [
-      '-i', 'pipe:0',         // input from stdin
-      '-i', 'pipe:1',         // input from stdin
-      '-codec', 'copy',       // copy codec
-      '-shortest',            // stop encoding when the shortest clip ends
-      '-f', 'mp4',            // output format
-      'pipe:2'                // output to stdout
-    ]);
-
-    ffmpegProcess.on('error', (err) => {
-      reject(err);
-    });
-
-    ffmpegProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(Buffer.concat(chunks));
-      } else {
-        reject(new Error(`ffmpeg process exited with code ${code}`));
-      }
-    });
-
-    // Pipe audio and video buffers into ffmpeg stdin
-    ffmpegProcess.stdin.write(audioBuffer);
-    ffmpegProcess.stdin.write(videoBuffer);
-    ffmpegProcess.stdin.end();
   });
 };
 
