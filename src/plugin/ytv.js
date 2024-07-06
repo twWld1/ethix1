@@ -146,7 +146,7 @@ const song = async (m, Matrix) => {
         }, { quoted: m });
       } catch (error) {
         console.error("Error fetching video details:", error);
-        m.reply('Error fetching video details.');
+        m.reply('This Quaility Is Not Found.');
       }
     }
   }
