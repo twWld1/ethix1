@@ -141,6 +141,7 @@ const song = async (m, Matrix) => {
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
+          fileName: `${selectedQuality.title}`,
           caption: `Title: ${selectedQuality.title}\nAuthor: ${selectedQuality.author}\nViews: ${selectedQuality.views}\nLikes: ${selectedQuality.likes}\nUpload Date: ${selectedQuality.uploadDate}\nDuration: ${duration}\nSize: ${size}\nQuality: ${selectedQuality.quality}\n\n> © Powered by Ethix-MD`
         }, { quoted: m });
       } catch (error) {
