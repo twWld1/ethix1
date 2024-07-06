@@ -143,7 +143,9 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
 
-        const videoStream = ytdl(videoUrl, { filter: format => format.itag === selectedQuality.itag });
+        
+        const videoStream = ytdl(videoUrl, { filter: 'audioandvideo', quality: selectedQuality.itag });
+       
 
         const finalVideoBuffer = await streamToBuffer(videoStream);
 
