@@ -5,7 +5,7 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
-const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p', '1440p'];
+const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p'];
 
 const song = async (m, Matrix) => {
   let selectedListId;
@@ -45,7 +45,9 @@ const song = async (m, Matrix) => {
         views: info.videoDetails.viewCount,
         likes: info.videoDetails.likes,
         uploadDate: formatDate(info.videoDetails.uploadDate),
-        duration: formatDuration(info.videoDetails.lengthSeconds)
+        duration: formatDuration(info.videoDetails.lengthSeconds),
+        thumbnailUrl: info.videoDetails.thumbnails[0].url,
+        videoUrl: info.videoDetails.video_url
       };
 
       const qualityButtons = qualities.map((quality, index) => {
@@ -74,7 +76,7 @@ const song = async (m, Matrix) => {
                 text: "© Powered By Ethix-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: selectedQuality.thumbnailUrl } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
@@ -98,9 +100,14 @@ const song = async (m, Matrix) => {
                 ],
               }),
               contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 999,
-                isForwarded: true,
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "Ethix-MD",
+                  serverMessageId: 143
+                }
               }
             }),
           },
@@ -126,7 +133,7 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
         const info = await ytdl.getInfo(videoUrl);
-        const format = info.formats.find(f => f.qualityLabel === selectedQuality.quality);
+        const format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
 
         if (!format) {
           throw new Error(`Format not found for quality: ${selectedQuality.quality}`);
@@ -142,11 +149,33 @@ const song = async (m, Matrix) => {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
           fileName: `${selectedQuality.title}`,
-          caption: `Title: ${selectedQuality.title}\nAuthor: ${selectedQuality.author}\nViews: ${selectedQuality.views}\nLikes: ${selectedQuality.likes}\nUpload Date: ${selectedQuality.uploadDate}\nDuration: ${duration}\nSize: ${size}\nQuality: ${selectedQuality.quality}\n\n> © Powered by Ethix-MD`
-        }, { quoted: m });
+          caption: `> © Powered By Ethix-MD`
+        }, 
+        {
+          contextInfo: {
+            externalAdReply: {
+              showAdAttribution: false,
+              title: selectedQuality.title,
+              body: "Ethix-MD",
+              thumbnailUrl: selectedQuality.thumbnailUrl,
+              sourceUrl: selectedQuality.videoUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            },
+            mentionedJid: [m.sender],
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: '120363249960769123@newsletter',
+              newsletterName: "Ethix-MD",
+              serverMessageId: 143
+            }
+          },
+          quoted: m
+        });
       } catch (error) {
         console.error("Error fetching video details:", error);
-        m.reply('This Quaility Is Not Found.');
+        m.reply('Error fetching video details.');
       }
     }
   }
