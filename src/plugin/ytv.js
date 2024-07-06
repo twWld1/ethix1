@@ -52,7 +52,7 @@ const song = async (m, Matrix) => {
         videoUrl: info.videoDetails.video_url
       };
       
-      const videoInfo = await yts({ videoId: ytdl.getURLVideoID(videoUrl) });
+      const videoInfo = await yts({ videoId: ytdl.getURLVideoID(videoDetails.videoUrl) });
 
       const qualityButtons = qualities.map((quality, index) => {
         const uniqueId = videoIndex + index;
