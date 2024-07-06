@@ -46,7 +46,7 @@ const song = async (m, Matrix) => {
         likes: info.videoDetails.likes,
         uploadDate: formatDate(info.videoDetails.uploadDate),
         duration: formatDuration(info.videoDetails.lengthSeconds),
-        thumbnailUrl: info.videoDetails.thumbnails[0].url,
+        thumbnailUrl: info.videoDetails.thumbnail,
         videoUrl: info.videoDetails.video_url
       };
 
@@ -132,33 +132,22 @@ const song = async (m, Matrix) => {
     if (selectedQuality) {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
-        const info = await ytdl.getInfo(videoUrl);
-        
-        let format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasVideo && f.hasAudio);
+        const formatOptions = {
+          filter: 'audioandvideo', // Filter for formats with both audio and video
+          quality: selectedQuality.quality // Selected quality label (e.g., '720p')
+        };
 
-        if (!format) {
-          format = info.formats
-            .filter(f => f.hasVideo && f.hasAudio)
-            .sort((a, b) => b.bitrate - a.bitrate)[0];
-
-          if (!format) {
-            throw new Error(`No available format with audio and video for quality: ${selectedQuality.quality}`);
-          }
-
-          console.warn(`Desired quality ${selectedQuality.quality} not found, falling back to ${format.qualityLabel}`);
-        }
-
-        const videoStream = ytdl(videoUrl, { format });
+        const videoStream = ytdl(videoUrl, formatOptions);
         const finalVideoBuffer = await streamToBuffer(videoStream);
 
         const duration = selectedQuality.duration;
-        const size = format.contentLength ? formatSize(format.contentLength) : 'Unknown size';
+        const size = 'Unknown size'; 
 
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
           fileName: `${selectedQuality.title}`,
-          caption: `> © Powered By Ethix-MD`
+          caption: `> © Powered By Ethix-MD\n\n*${selectedQuality.quality}*`
         },
           {
             contextInfo: {
@@ -171,6 +160,14 @@ const song = async (m, Matrix) => {
                 mediaType: 1,
                 renderLargerThumbnail: true
               },
+              mentionedJid: [m.sender],
+              forwardingScore: 999,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363249960769123@newsletter',
+                newsletterName: "Ethix-MD",
+                serverMessageId: 143
+              }
             },
             quoted: m
           });
@@ -187,13 +184,6 @@ const formatDuration = (seconds) => {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   return `${h}h ${m}m ${s}s`;
-};
-
-const formatSize = (size) => {
-  if (size < 1024) return `${size.toFixed(2)} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-  if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
-  return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
 };
 
 const formatDate = (date) => {
