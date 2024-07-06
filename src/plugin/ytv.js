@@ -6,13 +6,14 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
+// Unique combined audio-video formats for the requested qualities
 const formats = [
-  { itag: 137, quality: '1080p' },
-  { itag: 136, quality: '720p' },
-  { itag: 135, quality: '480p' },
-  { itag: 134, quality: '360p' },
+  { itag: 160, quality: '144p' },
   { itag: 133, quality: '240p' },
-  { itag: 160, quality: '144p' }
+  { itag: 18, quality: '360p' },
+  { itag: 135, quality: '480p' },
+  { itag: 22, quality: '720p' },
+  { itag: 137, quality: '1080p' }
 ];
 
 const song = async (m, Matrix) => {
@@ -143,11 +144,9 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
 
-        // Download video and audio separately
         const videoStream = ytdl(videoUrl, { quality: selectedQuality.itag });
-        const audioStream = ytdl(videoUrl, { filter: 'audioonly', quality: 'highestaudio' });
 
-        const finalVideoBuffer = await mergeStreams(videoStream, audioStream);
+        const finalVideoBuffer = await streamToBuffer(videoStream);
 
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
@@ -186,26 +185,6 @@ const streamToBuffer = async (stream) => {
     stream.on('data', chunk => chunks.push(chunk));
     stream.on('end', () => resolve(Buffer.concat(chunks)));
     stream.on('error', reject);
-  });
-};
-
-const mergeStreams = async (videoStream, audioStream) => {
-  import ffmpeg from 'fluent-ffmpeg';
-  import PassThrough from 'stream'.PassThrough;
-  const outputStream = new PassThrough();
-
-  return new Promise((resolve, reject) => {
-    ffmpeg()
-      .input(videoStream)
-      .videoCodec('copy')
-      .input(audioStream)
-      .audioCodec('aac')
-      .format('mp4')
-      .on('error', reject)
-      .on('end', () => {
-        resolve(outputStream.read());
-      })
-      .pipe(outputStream, { end: true });
   });
 };
 
