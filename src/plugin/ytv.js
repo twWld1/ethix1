@@ -46,7 +46,7 @@ const song = async (m, Matrix) => {
         likes: info.videoDetails.likes,
         uploadDate: formatDate(info.videoDetails.uploadDate),
         duration: formatDuration(info.videoDetails.lengthSeconds),
-        thumbnailUrl: info.videoDetails.thumbnail,
+        thumbnailUrl: info.videoDetails.thumbnails,
         videoUrl: info.videoDetails.video_url
       };
 
