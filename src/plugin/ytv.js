@@ -5,6 +5,8 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
+const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p', '1440p'];
+
 const song = async (m, Matrix) => {
   let selectedListId;
   const selectedButtonId = m?.message?.templateButtonReplyMessage?.selectedId;
@@ -36,14 +38,6 @@ const song = async (m, Matrix) => {
       await m.React("🕘");
 
       const info = await ytdl.getInfo(text);
-      const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p', '1440p'];
-      const formats = qualities.map(q => ytdl.filterFormats(info.formats, format => format.qualityLabel === q && format.hasAudio && format.hasVideo)[0]).filter(Boolean);
-
-      if (formats.length === 0) {
-        m.reply('No downloadable formats found.');
-        await m.React("❌");
-        return;
-      }
 
       const videoDetails = {
         title: info.videoDetails.title,
@@ -54,17 +48,16 @@ const song = async (m, Matrix) => {
         duration: formatDuration(info.videoDetails.lengthSeconds)
       };
 
-      const qualityButtons = await Promise.all(formats.map(async (format, index) => {
+      const qualityButtons = qualities.map((quality, index) => {
         const uniqueId = videoIndex + index;
-        const size = format.contentLength ? formatSize(format.contentLength) : 'Unknown size';
-        videoMap.set(uniqueId, { ...format, videoId: info.videoDetails.videoId, ...videoDetails, size });
+        videoMap.set(uniqueId, { quality, videoId: info.videoDetails.videoId, ...videoDetails });
         return {
           "header": "",
-          "title": `${format.qualityLabel} (${format.container}) - ${size}`,
-          "description": `Bitrate: ${format.bitrate}`,
+          "title": `${quality}`,
+          "description": `Select ${quality} quality`,
           "id": `quality_${uniqueId}`
         };
-      }));
+      });
 
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
@@ -95,7 +88,7 @@ const song = async (m, Matrix) => {
                       title: "🎬 Select a video quality",
                       sections: [
                         {
-                          title: "♂️ Available Qualities",
+                          title: "📥 Available Qualities",
                           highlight_label: "💡 Choose Quality",
                           rows: qualityButtons
                         },
@@ -119,7 +112,7 @@ const song = async (m, Matrix) => {
       });
       await m.React("✅");
 
-      videoIndex += formats.length;
+      videoIndex += qualities.length;
     } catch (error) {
       console.error("Error processing your request:", error);
       m.reply('Error processing your request.');
@@ -127,21 +120,28 @@ const song = async (m, Matrix) => {
     }
   } else if (selectedId) {
     const key = parseInt(selectedId.replace('quality_', ''));
-    const selectedFormat = videoMap.get(key);
+    const selectedQuality = videoMap.get(key);
 
-    if (selectedFormat) {
+    if (selectedQuality) {
       try {
-        const videoUrl = `https://www.youtube.com/watch?v=${selectedFormat.videoId}`;
-        const videoStream = ytdl(videoUrl, { format: selectedFormat });
+        const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
+        const info = await ytdl.getInfo(videoUrl);
+        const format = ytdl.chooseFormat(info.formats, { qualityLabel: selectedQuality.quality });
+
+        if (!format) {
+          throw new Error(`Format not found for quality: ${selectedQuality.quality}`);
+        }
+
+        const videoStream = ytdl(videoUrl, { format });
         const finalVideoBuffer = await streamToBuffer(videoStream);
 
-        const duration = selectedFormat.duration;
-        const size = selectedFormat.size;
+        const duration = selectedQuality.duration;
+        const size = format.contentLength ? formatSize(format.contentLength) : 'Unknown size';
 
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
-          caption: `Title: ${selectedFormat.title}\nAuthor: ${selectedFormat.author}\nViews: ${selectedFormat.views}\nLikes: ${selectedFormat.likes}\nUpload Date: ${selectedFormat.uploadDate}\nDuration: ${duration}\nSize: ${size}\n\n> Powered by Your Service`
+          caption: `Title: ${selectedQuality.title}\nAuthor: ${selectedQuality.author}\nViews: ${selectedQuality.views}\nLikes: ${selectedQuality.likes}\nUpload Date: ${selectedQuality.uploadDate}\nDuration: ${duration}\nSize: ${size}\n\n> Powered by Your Service`
         }, { quoted: m });
       } catch (error) {
         console.error("Error fetching video details:", error);
