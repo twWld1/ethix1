@@ -1,6 +1,7 @@
 import ytdl from 'ytdl-core';
 import { spawn } from 'child_process';
-import { generateWAMessageFromContent, proto } from '@whiskeysockets/baileys';
+import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
+const { generateWAMessageFromContent, proto } = pkg;
 
 const videoMap = new Map();
 let videoIndex = 1;
