@@ -1,6 +1,6 @@
 import ytdl from 'ytdl-core';
-import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
-const { generateWAMessageFromContent, proto } = pkg;
+import { spawn } from 'child_process';
+import { generateWAMessageFromContent, proto } from '@whiskeysockets/baileys';
 
 const videoMap = new Map();
 let videoIndex = 1;
@@ -100,9 +100,9 @@ const song = async (m, Matrix) => {
                 ],
               }),
               contextInfo: {
-                  mentionedJid: [m.sender], 
-                  forwardingScore: 999,
-                  isForwarded: true,
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                   newsletterJid: '120363249960769123@newsletter',
                   newsletterName: "Ethix-MD",
@@ -133,25 +133,27 @@ const song = async (m, Matrix) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
         const info = await ytdl.getInfo(videoUrl);
-        const format = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
+        const videoFormat = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasVideo);
+        const audioFormat = info.formats.find(f => f.qualityLabel === selectedQuality.quality && f.hasAudio);
 
-        if (!format) {
+        if (!videoFormat || !audioFormat) {
           throw new Error(`Format not found for quality: ${selectedQuality.quality}`);
         }
 
-        const videoStream = ytdl(videoUrl, { format });
-        const finalVideoBuffer = await streamToBuffer(videoStream);
+        const videoStream = ytdl(videoUrl, { format: videoFormat });
+        const audioStream = ytdl(videoUrl, { format: audioFormat });
 
-        const duration = selectedQuality.duration;
-        const size = format.contentLength ? formatSize(format.contentLength) : 'Unknown size';
+        const videoBuffer = await streamToBuffer(videoStream);
+        const audioBuffer = await streamToBuffer(audioStream);
+
+        const mergedBuffer = await mergeAudioAndVideo(audioBuffer, videoBuffer);
 
         await Matrix.sendMessage(m.from, {
-          document: finalVideoBuffer,
+          document: mergedBuffer,
           mimetype: 'video/mp4',
-          fileName: `${selectedQuality.title}`,
+          fileName: `${selectedQuality.title}.mp4`,
           caption: `> © Powered By Ethix-MD`
-        }, 
-        {
+        }, {
           contextInfo: {
             externalAdReply: {
               showAdAttribution: false,
@@ -188,13 +190,6 @@ const formatDuration = (seconds) => {
   return `${h}h ${m}m ${s}s`;
 };
 
-const formatSize = (size) => {
-  if (size < 1024) return `${size.toFixed(2)} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-  if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
-  return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
-};
-
 const formatDate = (date) => {
   const d = new Date(date);
   const day = d.getDate().toString().padStart(2, '0');
@@ -209,6 +204,36 @@ const streamToBuffer = async (stream) => {
     stream.on('data', chunk => chunks.push(chunk));
     stream.on('end', () => resolve(Buffer.concat(chunks)));
     stream.on('error', reject);
+  });
+};
+
+const mergeAudioAndVideo = async (audioBuffer, videoBuffer) => {
+  return new Promise((resolve, reject) => {
+    const ffmpegProcess = spawn('ffmpeg', [
+      '-i', 'pipe:0',         // input from stdin
+      '-i', 'pipe:1',         // input from stdin
+      '-codec', 'copy',       // copy codec
+      '-shortest',            // stop encoding when the shortest clip ends
+      '-f', 'mp4',            // output format
+      'pipe:2'                // output to stdout
+    ]);
+
+    ffmpegProcess.on('error', (err) => {
+      reject(err);
+    });
+
+    ffmpegProcess.on('close', (code) => {
+      if (code === 0) {
+        resolve(Buffer.concat(chunks));
+      } else {
+        reject(new Error(`ffmpeg process exited with code ${code}`));
+      }
+    });
+
+    // Pipe audio and video buffers into ffmpeg stdin
+    ffmpegProcess.stdin.write(audioBuffer);
+    ffmpegProcess.stdin.write(videoBuffer);
+    ffmpegProcess.stdin.end();
   });
 };
 
