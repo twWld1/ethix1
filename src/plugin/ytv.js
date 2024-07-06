@@ -7,14 +7,12 @@ const videoMap = new Map();
 let videoIndex = 1;
 
 const formats = [
-  { itag: 18, container: 'mp4', quality: '360p', codecs: 'avc1.42001E, mp4a.40.2', bitrate: '696.66KB', audioBitrate: '96KB' },
-  { itag: 137, container: 'mp4', quality: '1080p', codecs: 'avc1.640028', bitrate: '4.53MB' },
-  { itag: 248, container: 'webm', quality: '1080p', codecs: 'vp9', bitrate: '2.52MB' },
-  { itag: 136, container: 'mp4', quality: '720p', codecs: 'avc1.4d4016', bitrate: '2.2MB' },
-  { itag: 247, container: 'webm', quality: '720p', codecs: 'vp9', bitrate: '1.44MB' },
-  { itag: 135, container: 'mp4', quality: '480p', codecs: 'avc1.4d4014', bitrate: '1.1MB' },
-  { itag: 134, container: 'mp4', quality: '360p', codecs: 'avc1.4d401e', bitrate: '593.26KB' },
-  { itag: 140, container: 'mp4', quality: 'audio', codecs: 'mp4a.40.2', audioBitrate: '128KB' }
+  { itag: 160, quality: '144P' },
+  { itag: 133, quality: '240p' },
+  { itag: 134, quality: '360p' },
+  { itag: 135, quality: '480p' },
+  { itag: 136, quality: '720p' },
+  { itag: 137, quality: '1080p' }
 ];
 
 const song = async (m, Matrix) => {
@@ -67,8 +65,8 @@ const song = async (m, Matrix) => {
         videoMap.set(uniqueId, { ...format, videoId: info.videoDetails.videoId, ...videoDetails });
         return {
           "header": "",
-          "title": `${format.quality} (${format.container})`,
-          "description": `Select ${format.quality} quality in ${format.container} format`,
+          "title": `${format.quality}`,
+          "description": `Select ${format.quality} quality`,
           "id": `quality_${uniqueId}`
         };
       });
@@ -151,7 +149,7 @@ const song = async (m, Matrix) => {
 
         await Matrix.sendMessage(m.from, {
           document: finalVideoBuffer,
-          mimetype: selectedQuality.container === 'mp4' ? 'video/mp4' : 'video/webm',
+          mimetype: 'video/mp4',
           fileName: `${selectedQuality.title}`,
           caption: `> © Powered By Ethix-MD\n\n*${selectedQuality.quality}*`
         }, {
