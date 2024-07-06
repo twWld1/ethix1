@@ -8,12 +8,12 @@ let videoIndex = 1;
 
 // Unique combined audio-video formats for the requested qualities
 const formats = [
-  { itag: 160, quality: '144p' },
-  { itag: 133, quality: '240p' },
+  { itag: 249, quality: '144p' },
+  { itag: 250, quality: '240p' },
   { itag: 18, quality: '360p' },
-  { itag: 135, quality: '480p' },
-  { itag: 22, quality: '720p' },
-  { itag: 137, quality: '1080p' }
+  { itag: 251, quality: '480p' },
+  { itag: 248, quality: '720p' },
+  { itag: 171, quality: '1080p' }
 ];
 
 const song = async (m, Matrix) => {
