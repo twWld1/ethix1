@@ -6,16 +6,6 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
-// Unique combined audio-video formats for the requested qualities
-const formats = [
-  { itag: 249, quality: '144p' },
-  { itag: 250, quality: '240p' },
-  { itag: 18, quality: '360p' },
-  { itag: 251, quality: '480p' },
-  { itag: 248, quality: '720p' },
-  { itag: 171, quality: '1080p' }
-];
-
 const song = async (m, Matrix) => {
   let selectedListId;
   const selectedButtonId = m?.message?.templateButtonReplyMessage?.selectedId;
@@ -61,16 +51,31 @@ const song = async (m, Matrix) => {
 
       const videoInfo = await yts({ videoId: ytdl.getURLVideoID(videoDetails.videoUrl) });
 
-      const qualityButtons = formats.map((format, index) => {
-        const uniqueId = videoIndex + index;
-        videoMap.set(uniqueId, { ...format, videoId: info.videoDetails.videoId, ...videoDetails });
-        return {
-          "header": "",
-          "title": `${format.quality}`,
-          "description": `Select ${format.quality} quality`,
-          "id": `quality_${uniqueId}`
-        };
-      });
+      // Filter formats to only include those with both audio and video
+      const formats = info.formats.filter(format => format.hasAudio && format.hasVideo);
+
+      // Map of quality labels to the respective format itags
+      const desiredQualities = {
+        '144p': formats.find(f => f.qualityLabel === '144p')?.itag,
+        '240p': formats.find(f => f.qualityLabel === '240p')?.itag,
+        '360p': formats.find(f => f.qualityLabel === '360p')?.itag,
+        '480p': formats.find(f => f.qualityLabel === '480p')?.itag,
+        '720p': formats.find(f => f.qualityLabel === '720p')?.itag,
+        '1080p': formats.find(f => f.qualityLabel === '1080p')?.itag,
+      };
+
+      const qualityButtons = Object.entries(desiredQualities).map(([quality, itag], index) => {
+        if (itag) {
+          const uniqueId = videoIndex + index;
+          videoMap.set(uniqueId, { itag, videoId: info.videoDetails.videoId, ...videoDetails, quality });
+          return {
+            "header": "",
+            "title": `${quality}`,
+            "description": `Select ${quality} quality`,
+            "id": `quality_${uniqueId}`
+          };
+        }
+      }).filter(Boolean);
 
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
@@ -130,7 +135,7 @@ const song = async (m, Matrix) => {
       });
       await m.React("✅");
 
-      videoIndex += formats.length;
+      videoIndex += qualityButtons.length;
     } catch (error) {
       console.error("Error processing your request:", error);
       m.reply('Error processing your request.');
