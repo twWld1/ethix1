@@ -6,7 +6,7 @@ const { generateWAMessageFromContent, proto } = pkg;
 const videoMap = new Map();
 let videoIndex = 1;
 
-const qualities = ['144p', '240p', '360p', '480p', '720p', '1080p'];
+const qualities = ['144', '240', '360', '480', '720', '1080'];
 
 const song = async (m, Matrix) => {
   let selectedListId;
@@ -136,12 +136,9 @@ const song = async (m, Matrix) => {
     if (selectedQuality) {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${selectedQuality.videoId}`;
-        const formatOptions = {
-          filter: 'audioandvideo', // Filter for formats with both audio and video
-          quality: selectedQuality.quality // Selected quality label (e.g., '720p')
-        };
-
-        const videoStream = ytdl(videoUrl, formatOptions);
+       
+        const videoStream = ytdl(videoUrl.url, { filter: 'audioandvideo', quality: 'highest' });
+      }
         const finalVideoBuffer = await streamToBuffer(videoStream);
 
         const duration = selectedQuality.duration;
