@@ -18,7 +18,7 @@ const imageCommand = async (m, sock) => {
 
     try {
       await m.React("📥");
-      const response = await axios.get(`https://aemt.me/googleimage?query=${encodeURIComponent(query)}`);
+      const response = await axios.get(`https://api.guruapi.tech/api/googleimage?text=${encodeURIComponent(query)}`);
       
       if (!response.data || !response.data.result) {
         return sock.sendMessage(m.from, { text: 'No images found for your search query.' });
