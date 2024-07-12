@@ -173,31 +173,41 @@ const song = async (m, Matrix) => {
           await Matrix.sendMessage(m.from, 
             { 
               image: { url: thumbnailUrl }, 
-              caption: `Title: ${title}\nAuthor: ${author}\nDuration: ${duration}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
+              caption: `> *TITLE:* ${title}\n> *AUTHOR:* ${author}\n> *DURATION:* ${duration}\n> *© POWERED BY 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`,
               contextInfo: {
             externalAdReply: {
                 showAdAttribution: true,
                 title: title,
                 sourceUrl: videoUrl,
-                body: author
+                body: author,
+                mediaType: 1,
+                renderLargerThumbnail: true
             }
         }
             }, 
             { quoted: m }
           );
 
-          await Matrix.sendMessage(m.from, 
-            { 
-              audio: finalAudioBuffer, 
-              mimetype: 'audio/mpeg',
-              contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 9999,
-                isForwarded: true,
-              }
-            }, 
-            { quoted: m }
-          );
+          let doc = {
+        audio: finalAudioBuffer,
+        mimetype: 'audio/mpeg',
+        ptt: false,
+        waveform:  [100, 0, 100, 0, 100, 0, 100],
+        fileName: `${title}.mp3`,
+        contextInfo: {
+          mentionedJid: [m.sender],
+          externalAdReply: {
+            title: "↺ |◁   II   ▷|   ♡",
+            body: `Now playing: ${text}`,
+            thumbnailUrl: thumbnailUrl,
+            sourceUrl: null,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
+        }
+    };
+
+    await Matrix.sendMessage(m.from, doc, { quoted: m });
         } else {
           const videoStream = ytdl(videoUrl, { filter: 'audioandvideo', quality: 'highest' });
           const finalVideoBuffer = await streamToBuffer(videoStream);
