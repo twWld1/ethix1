@@ -170,24 +170,6 @@ const song = async (m, Matrix) => {
           const audioStream = ytdl(videoUrl, { filter: 'audioonly', quality: 'highestaudio' });
           const finalAudioBuffer = await streamToBuffer(audioStream);
 
-          await Matrix.sendMessage(m.from,
-            {
-              image: { url: thumbnailUrl },
-              caption: `> *TITLE:* ${title}\n> *AUTHOR:* ${author}\n> *DURATION:* ${duration}\n> *© POWERED BY 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`,
-              contextInfo: {
-                externalAdReply: {
-                  showAdAttribution: true,
-                  title: title,
-                  sourceUrl: videoUrl,
-                  body: author,
-                  mediaType: 1,
-                  renderLargerThumbnail: true
-                }
-              }
-            },
-            { quoted: m }
-          );
-
           let doc = {
             audio: finalAudioBuffer,
             mimetype: 'audio/mpeg',
@@ -200,7 +182,7 @@ const song = async (m, Matrix) => {
                 title: "↺ |◁   II   ▷|   ♡",
                 body: `Now playing: ${text}`,
                 thumbnailUrl: thumbnailUrl,
-                sourceUrl: null,
+                sourceUrl: videoUrl,
                 mediaType: 1,
                 renderLargerThumbnail: true
               }
@@ -218,18 +200,17 @@ const song = async (m, Matrix) => {
               mimetype: 'video/mp4',
               caption: `Title: ${title}\nAuthor: ${author}\nDuration: ${duration}\n\n> Powered by Ethix-MD`,
               contextInfo: {
-                externalAdReply: {
-                  showAdAttribution: true,
-                  title: `${title}`,
-                  body: `${author}`,
-                  thumbnailUrl: thumbnailUrl,
-                  sourceUrl: videoUrl,
-                  mediaType: 1,
-                  renderLargerThumbnail: true
-                }
+              mentionedJid: [m.sender],
+              externalAdReply: {
+                title: "↺ |◁   II   ▷|   ♡",
+                body: `Now playing: ${text}`,
+                thumbnailUrl: thumbnailUrl,
+                sourceUrl: videoUrl,
+                mediaType: 1,
+                renderLargerThumbnail: true
               }
+            }
             },
-            { quoted: m }
           );
         }
       } catch (error) {
