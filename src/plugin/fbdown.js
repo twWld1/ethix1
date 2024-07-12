@@ -53,6 +53,15 @@ const facebookCommand = async (m, Matrix) => {
         })
       }));
 
+      const sections = fbData.data.map((video) => ({
+        title: 'Video Qualities',
+        rows: [{
+          title: `📥 Download ${video.resolution}`,
+          description: `Resolution: ${video.resolution} | Size: ${(video.size / (1024 * 1024)).toFixed(2)} MB`,
+          id: `media_${fbSearchIndex}_${video.resolution}`
+        }]
+      }));
+
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
           message: {
@@ -62,7 +71,7 @@ const facebookCommand = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `Ethix-MD Facebook Video Download\n\n🔍 Select the desired video quality to download.\n\n📌 Choose an option to download.\n\n`
+                text: `*ETHIX-MD FACEBOOK POST DOWNLOADER*\n\n> *TITLE*: ${fbData.title}\n> *SIZE*: ${(fbData.size / (1024 * 1024)).toFixed(2)} MB`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
                 text: "© Powered By Ethix-MD"
