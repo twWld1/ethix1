@@ -237,27 +237,26 @@ const playcommand = async (m, Matrix) => {
           finalMediaBuffer = await getStreamBuffer(stream);
           mimeType = type === 'audio' || type === 'audiodoc' ? 'audio/mpeg' : 'video/mp4';
 
-          const fileSizeInMB = finalMediaBuffer.length / (1024 * 1024);
-
           if (type === 'audio') {
             content = {
               audio: finalMediaBuffer,
-              mimetype: mimeType
-            };
-            await Matrix.sendMessage(m.from, content, {
+              mimetype: 'audio/mpeg',
+              ptt: false,
+              waveform: [100, 0, 100, 0, 100, 0, 100],
+              fileName: `${selectedMedia.title}.mp3`,
               contextInfo: {
+                mentionedJid: [m.sender],
                 externalAdReply: {
-                  showAdAttribution: true,
-                  title: `${selectedMedia.title}`,
-                  body: 'Ethix-MD',
-                  thumbnailUrl: `${selectedMedia.thumbnail}`,
-                  sourceUrl: `${selectedMedia.url}`,
+                  title: "↺ |◁   II   ▷|   ♡",
+                  body: `Now playing: ${selectedMedia.title}`,
+                  thumbnailUrl: selectedMedia.thumbnail,
+                  sourceUrl: videoUrl,
                   mediaType: 1,
                   renderLargerThumbnail: true
                 }
-              },
-              quoted: m
-            });
+              }
+            };
+            await Matrix.sendMessage(m.from, content, { quoted: m });
           } else if (type === 'video') {
             content = {
               video: finalMediaBuffer,
@@ -270,22 +269,20 @@ const playcommand = async (m, Matrix) => {
               document: finalMediaBuffer,
               mimetype: mimeType,
               fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
-              caption: `> *TITLE:* ${selectedMedia.title}\n\n*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
-            };
-            await Matrix.sendMessage(m.from, content, {
+              caption: `> *TITLE:* ${selectedMedia.title}\n\n*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`,
               contextInfo: {
                 externalAdReply: {
                   showAdAttribution: true,
-                  title: `${selectedMedia.title}`,
+                  title: selectedMedia.title,
                   body: 'Ethix-MD',
-                  thumbnailUrl: `${selectedMedia.thumbnail}`,
-                  sourceUrl: `${selectedMedia.url}`,
+                  thumbnailUrl: selectedMedia.thumbnail,
+                  sourceUrl: selectedMedia.url,
                   mediaType: 1,
                   renderLargerThumbnail: true
                 }
-              },
-              quoted: m
-            });
+              }
+            };
+            await Matrix.sendMessage(m.from, content, { quoted: m });
           }
         } catch (error) {
           console.error("Error processing your request:", error);
