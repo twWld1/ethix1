@@ -239,34 +239,54 @@ const playcommand = async (m, Matrix) => {
 
           const fileSizeInMB = finalMediaBuffer.length / (1024 * 1024);
 
-          if ((type === 'audio' || type === 'video') && fileSizeInMB <= 300) {
-          content = {
-            [type]: finalMediaBuffer,
-            mimetype: mimeType,
-            caption: `Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`
-          };
-        } else {
-          content = {
-            document: finalMediaBuffer,
-            mimetype: mimeType,
-            fileName: `${selectedVideo.title}.${type === 'audio' ? 'mp3' : 'mp4'}`,
-            caption: `> *© POWERED BY ETHIX-MD*`
-          };
-        }
-
-        await Matrix.sendMessage(m.from, content, {
-          contextInfo: {
-            externalAdReply: {
-              showAdAttribution: true,
-              title: `${selectedVideo.title}`,
-              body: 'Ethix-MD',
-              thumbnailUrl: `${selectedVideo.thumbnail}`,
-              sourceUrl: `${selectedVideo.video_url}`,
-              mediaType: 1,
-              renderLargerThumbnail: true
-            }
+          if (type === 'audio') {
+            content = {
+              audio: finalMediaBuffer,
+              mimetype: mimeType
+            };
+            await Matrix.sendMessage(m.from, content, {
+              contextInfo: {
+                externalAdReply: {
+                  showAdAttribution: true,
+                  title: `${selectedMedia.title}`,
+                  body: 'Ethix-MD',
+                  thumbnailUrl: `${selectedMedia.thumbnail}`,
+                  sourceUrl: `${selectedMedia.url}`,
+                  mediaType: 1,
+                  renderLargerThumbnail: true
+                }
+              },
+              quoted: m
+            });
+          } else if (type === 'video') {
+            content = {
+              video: finalMediaBuffer,
+              mimetype: mimeType,
+              caption: `> TITLE: ${selectedMedia.title}\n\n*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
+            };
+            await Matrix.sendMessage(m.from, content, { quoted: m });
+          } else if (type === 'audiodoc' || type === 'videodoc') {
+            content = {
+              document: finalMediaBuffer,
+              mimetype: mimeType,
+              fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
+              caption: `*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
+            };
+            await Matrix.sendMessage(m.from, content, {
+              contextInfo: {
+                externalAdReply: {
+                  showAdAttribution: true,
+                  title: `${selectedMedia.title}`,
+                  body: 'Ethix-MD',
+                  thumbnailUrl: `${selectedMedia.thumbnail}`,
+                  sourceUrl: `${selectedMedia.url}`,
+                  mediaType: 1,
+                  renderLargerThumbnail: true
+                }
+              },
+              quoted: m
+            });
           }
-        });
         } catch (error) {
           console.error("Error processing your request:", error);
           m.reply('Error processing your request.');
