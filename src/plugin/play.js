@@ -270,7 +270,7 @@ const playcommand = async (m, Matrix) => {
               document: finalMediaBuffer,
               mimetype: mimeType,
               fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
-              caption: `*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
+              caption: `> *TITLE:* ${selectedMedia.title}\n\n*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
             };
             await Matrix.sendMessage(m.from, content, {
               contextInfo: {
