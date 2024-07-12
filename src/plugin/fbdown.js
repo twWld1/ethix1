@@ -60,7 +60,7 @@ const facebookCommand = async (m, Matrix) => {
       const buttons = [{
         name: "single_select",
         buttonParamsJson: JSON.stringify({
-          title: '♂️ Select Quality',
+          title: '🤩 Select Quality',
           sections: sections
         })
       }];
