@@ -86,7 +86,7 @@ const song = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `> *ETHIX-MD VIDEO DOWNLOADER\n> *TITLE:* ${videoDetails.title}\n> *AUTHOR:* ${videoDetails.author}\n> *VIEWS:* ${videoDetails.views}\n> *LIKES:* ${videoDetails.likes}\n> *UPLOAD DATE:* ${videoDetails.uploadDate}\n> *DURATION:* ${videoDetails.duration}\n`
+                text: `> *ETHIX-MD VIDEO DOWNLOADER*\n> *TITLE:* ${videoDetails.title}\n> *AUTHOR:* ${videoDetails.author}\n> *VIEWS:* ${videoDetails.views}\n> *LIKES:* ${videoDetails.likes}\n> *UPLOAD DATE:* ${videoDetails.uploadDate}\n> *DURATION:* ${videoDetails.duration}\n`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
                 text: "© Powered By Ethix-MD"
