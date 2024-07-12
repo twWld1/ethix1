@@ -250,11 +250,25 @@ const playcommand = async (m, Matrix) => {
               document: finalMediaBuffer,
               mimetype: mimeType,
               fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
-              caption: `> *© POWERED BY ETHIX-MD*`
+              caption: `Downloading ${type === 'audiodoc' ? 'audio' : 'video'}:
+              \n> *© POWERED BY ETHIX-MD*`
             };
           }
 
-          await Matrix.sendMessage(m.from, content, { quoted: m });
+          await Matrix.sendMessage(m.from, content, {
+  contextInfo: {
+    externalAdReply: {
+      showAdAttribution: true,
+      title: `${selectedMedia.title}`,
+      body: 'Ethix-MD',
+      thumbnailUrl: `${selectedMedia.thumbnail}`,
+      sourceUrl: `${selectedMedia.video_url}`,
+      mediaType: 1,
+      renderLargerThumbnail: true
+    }
+  },
+  quoted: m
+});
         } catch (error) {
           console.error("Error processing your request:", error);
           m.reply('Error processing your request.');
