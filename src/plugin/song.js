@@ -18,19 +18,6 @@ const song = async (m, Matrix) => {
       const isUrl = ytdl.validateURL(text);
 
       const sendAudioMessage = async (videoInfo, finalAudioBuffer) => {
-        const thumbnailMessage = {
-          image: { url: videoInfo.thumbnail },
-          caption: `
-╭──═❮ *YouTube Player* ✨ ❯═─┈•
-│✑ *Title:* ${videoInfo.title}
-│✑ *Duration:* ${videoInfo.timestamp}
-│✑ *Uploaded:* ${videoInfo.ago}
-│✑ *Uploader:* ${videoInfo.author.name}
-╰────────────────❃ 
-`,
-        };
-
-        await Matrix.sendMessage(m.from, thumbnailMessage, { quoted: m });
 
         if (cmd === 'ytmp3doc') {
           const docMessage = {
