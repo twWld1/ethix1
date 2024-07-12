@@ -1,4 +1,4 @@
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 import yts from 'yt-search';
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
@@ -153,14 +153,25 @@ const song = async (m, Matrix) => {
 
         const finalVideoBuffer = await streamToBuffer(videoStream);
 
-        await Matrix.sendMessage(m.from, {
+        const content = {
           document: finalVideoBuffer,
           mimetype: 'video/mp4',
-          fileName: `${selectedQuality.title}`,
-          caption: `> © Powered By Ethix-MD\n\n*${selectedQuality.quality}*`
-        }, {
-          quoted: m
-        });
+          fileName: `${selectedQuality.title}.mp4`,
+          caption: `*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`,
+          contextInfo: {
+            externalAdReply: {
+              showAdAttribution: true,
+              title: selectedQuality.title,
+              body: 'Ethix-MD',
+              thumbnailUrl: selectedQuality.thumbnailUrl,
+              sourceUrl: selectedQuality.videoUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
+          }
+        };
+
+        await Matrix.sendMessage(m.from, content, { quoted: m });
       } catch (error) {
         console.error("Error fetching video details:", error);
         m.reply(`Error fetching video details: ${error.message}`);
