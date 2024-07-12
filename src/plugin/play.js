@@ -240,34 +240,33 @@ const playcommand = async (m, Matrix) => {
           const fileSizeInMB = finalMediaBuffer.length / (1024 * 1024);
 
           if ((type === 'audio' || type === 'video') && fileSizeInMB <= 300) {
-            content = {
-              [type]: finalMediaBuffer,
-              mimetype: mimeType,
-              caption: `Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`
-            };
-          } else {
-            content = {
-              document: finalMediaBuffer,
-              mimetype: mimeType,
-              fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
-              caption: `> *© POWERED BY ETHIX-MD*`
-            };
-          }
+          content = {
+            [type]: finalMediaBuffer,
+            mimetype: mimeType,
+            caption: `Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`
+          };
+        } else {
+          content = {
+            document: finalMediaBuffer,
+            mimetype: mimeType,
+            fileName: `${selectedVideo.title}.${type === 'audio' ? 'mp3' : 'mp4'}`,
+            caption: `> *© POWERED BY ETHIX-MD*`
+          };
+        }
 
-          await Matrix.sendMessage(m.from, content, {
-  contextInfo: {
-    externalAdReply: {
-      showAdAttribution: true,
-      title: `${selectedMedia.title}`,
-      body: 'Ethix-MD',
-      thumbnailUrl: `${selectedMedia.thumbnail}`,
-      sourceUrl: `${selectedMedia.video_url}`,
-      mediaType: 1,
-      renderLargerThumbnail: true
-    }
-  },
-  quoted: m
-});
+        await Matrix.sendMessage(m.from, content, {
+          contextInfo: {
+            externalAdReply: {
+              showAdAttribution: true,
+              title: `${selectedVideo.title}`,
+              body: 'Ethix-MD',
+              thumbnailUrl: `${selectedVideo.thumbnail}`,
+              sourceUrl: `${selectedVideo.video_url}`,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
+          }
+        });
         } catch (error) {
           console.error("Error processing your request:", error);
           m.reply('Error processing your request.');
