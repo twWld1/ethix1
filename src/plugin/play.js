@@ -1,6 +1,6 @@
-import ytdl from 'ytdl-core';
 import ytSearch from 'yt-search';
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
+import axios from 'axios';
 const { generateWAMessageFromContent, proto } = pkg;
 
 const searchResultsMap = new Map();
@@ -36,7 +36,6 @@ const playcommand = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
- 
       const searchResults = await ytSearch(text);
       const videos = searchResults.videos.slice(0, 5); 
 
@@ -46,12 +45,10 @@ const playcommand = async (m, Matrix) => {
         return;
       }
 
-
       videos.forEach((video, index) => {
         const uniqueId = searchIndex + index;
         searchResultsMap.set(uniqueId, video);
       });
-
 
       const currentResult = searchResultsMap.get(searchIndex);
       const buttons = [
@@ -107,7 +104,6 @@ const playcommand = async (m, Matrix) => {
                 text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                 ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
@@ -198,7 +194,6 @@ const playcommand = async (m, Matrix) => {
                 text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                 ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
@@ -229,48 +224,43 @@ const playcommand = async (m, Matrix) => {
       if (selectedMedia) {
         try {
           const videoUrl = selectedMedia.url;
+
+          const apiResponse = await axios.get(`https://allinonedl.osc-fr1.scalingo.io/download?url=${videoUrl}`);
+          const lowQualityUrl = apiResponse.data.data.low;
+          const highQualityUrl = apiResponse.data.data.high;
+
           let finalMediaBuffer, mimeType, content;
-
-          const stream = ytdl(videoUrl, { filter: type === 'audio' || type === 'audiodoc' ? 'audioonly' : 'video' });
-
+          
           if (type === 'audio' || type === 'audiodoc') {
-            finalMediaBuffer = await getStreamBuffer(stream);
+            finalMediaBuffer = await axios.get(lowQualityUrl, { responseType: 'arraybuffer' });
             mimeType = 'audio/mp3';
           } else {
-            finalMediaBuffer = await getStreamBuffer(stream);
+            finalMediaBuffer = await axios.get(highQualityUrl, { responseType: 'arraybuffer' });
             mimeType = 'video/mp4';
           }
 
-          const fileSizeInMB = finalMediaBuffer.length / (1024 * 1024);
+          const fileSizeInMB = finalMediaBuffer.data.length / (1024 * 1024);
 
           if (type === 'audio' && fileSizeInMB <= 300) {
-            content = { audio: finalMediaBuffer, mimetype: 'audio/mpeg', caption: 'Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿' };
+            content = { audio: finalMediaBuffer.data, mimetype: 'audio/mpeg', caption: 'Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿' };
           } else if (type === 'video' && fileSizeInMB <= 300) {
-            content = { video: finalMediaBuffer, mimetype: 'video/mp4', caption: 'Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿' };
+            content = { video: finalMediaBuffer.data, mimetype: 'video/mp4', caption: 'Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿' };
           } else if (type === 'audiodoc') {
-            content = { document: finalMediaBuffer, mimetype: 'audio/mp3', fileName: `${selectedMedia.title}.mp3` };
+            content = { document: finalMediaBuffer.data, mimetype: 'audio/mp3', fileName: `${selectedMedia.title}.mp3` };
           } else if (type === 'videodoc') {
-            content = { document: finalMediaBuffer, mimetype: 'video/mp4', fileName: `${selectedMedia.title}.mp4`, caption: `Downloading video: ${selectedMedia.title}` };
+            content = { document: finalMediaBuffer.data, mimetype: 'video/mp4', fileName: `${selectedMedia.title}.mp4` };
+          } else {
+            return m.reply('File size is too large to send.');
           }
 
           await Matrix.sendMessage(m.from, content, { quoted: m });
         } catch (error) {
-          console.error("Error processing your request:", error);
-          m.reply('Error processing your request.');
-          await m.React("❌");
+          console.error('Error processing media download:', error);
+          m.reply('Error processing media download.');
         }
       }
     }
   }
-};
-
-const getStreamBuffer = async (stream) => {
-  const chunks = [];
-  return new Promise((resolve, reject) => {
-    stream.on('data', chunk => chunks.push(chunk));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-    stream.on('error', err => reject(err));
-  });
 };
 
 export default playcommand;
