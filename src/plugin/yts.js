@@ -86,7 +86,7 @@ const song = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `*𝞢𝙏𝞖𝞘𝞦-𝞛𝘿 VIDEO DOWNLAODER*\n\nTitle: ${title}\nAuthor: ${author}\nDuration: ${duration}s\nUpload Date: ${uploadDate}\nViews: ${views}\nURL: ${url}\nSize: ${size}`
+                text: `*𝞢𝙏𝞖𝞘𝞦-𝞛𝘿 VIDEO DOWNLAODER*\n\n> *TITLE:* _${title}_\n> *AUTHOR:* _${author}_\n> *DURATION:* _${duration}s_\n> *VIEWS:* _${views}_\n> *URL:* _${url}_`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
                 text: "© Powered By Ethix-MD"
@@ -175,10 +175,13 @@ const song = async (m, Matrix) => {
               image: { url: thumbnailUrl }, 
               caption: `Title: ${title}\nAuthor: ${author}\nDuration: ${duration}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
               contextInfo: {
-                mentionedJid: [m.sender],
-                forwardingScore: 9999,
-                isForwarded: true,
-              } 
+            externalAdReply: {
+                showAdAttribution: true,
+                title: title,
+                sourceUrl: videoUrl,
+                body: author
+            }
+        }
             }, 
             { quoted: m }
           );
