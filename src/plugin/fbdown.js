@@ -3,7 +3,6 @@ const { generateWAMessageFromContent, proto } = pkg;
 import pkgg from 'nayan-media-downloader';
 const { ndown } = pkgg;
 
-
 const fbSearchResultsMap = new Map();
 let fbSearchIndex = 1; 
 
@@ -37,7 +36,6 @@ const facebookCommand = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
-
       const fbData = await ndown(text);
       if (!fbData.status) {
         await m.reply('No results found.');
@@ -47,23 +45,13 @@ const facebookCommand = async (m, Matrix) => {
 
       fbSearchResultsMap.set(fbSearchIndex, fbData);
 
-      const sections = [{
-        title: 'Video Qualities',
-        rows: fbData.data.map((video, index) => ({
-          header: '',
-          title: `📥 Download ${video.resolution}`,
-          description: '',
+      const buttons = fbData.data.map((video, index) => ({
+        "name": "quick_reply",
+        "buttonParamsJson": JSON.stringify({
+          display_text: `📥 Download ${video.resolution}`,
           id: `media_${index}_${fbSearchIndex}`
-        }))
-      }];
-
-      const buttons = [{
-        name: "single_select",
-        buttonParamsJson: JSON.stringify({
-          title: '🤩 Select Quality',
-          sections: sections
         })
-      }];
+      }));
 
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
@@ -80,7 +68,7 @@ const facebookCommand = async (m, Matrix) => {
                 text: "© Powered By Ethix-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                 ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
@@ -128,7 +116,11 @@ const facebookCommand = async (m, Matrix) => {
           const fileSizeInMB = finalMediaBuffer.length / (1024 * 1024);
 
           if (fileSizeInMB <= 300) {
-            content = { video: finalMediaBuffer, mimetype: 'video/mp4', caption: '> © Powered by Ethix-MD' };
+            content = { 
+              video: finalMediaBuffer, 
+              mimetype: 'video/mp4', 
+              caption: '> © Powered by Ethix-MD',
+            };
             await Matrix.sendMessage(m.from, content, { quoted: m });
           } else {
             await m.reply('The video file size exceeds 300MB.');
