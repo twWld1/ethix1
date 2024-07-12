@@ -250,8 +250,7 @@ const playcommand = async (m, Matrix) => {
               document: finalMediaBuffer,
               mimetype: mimeType,
               fileName: `${selectedMedia.title}.${type === 'audiodoc' ? 'mp3' : 'mp4'}`,
-              caption: `Downloading ${type === 'audiodoc' ? 'audio' : 'video'}:
-              \n> *© POWERED BY ETHIX-MD*`
+              caption: `> *© POWERED BY ETHIX-MD*`
             };
           }
 
