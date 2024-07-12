@@ -1,5 +1,5 @@
 import yts from 'yt-search';
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
@@ -67,6 +67,16 @@ const song = async (m, Matrix) => {
         };
       });
 
+      const firstVideo = topVideos[0];
+      const videoInfo = await ytdl.getBasicInfo(firstVideo.videoId);
+      const title = videoInfo.videoDetails.title;
+      const author = videoInfo.videoDetails.author.name;
+      const duration = videoInfo.videoDetails.lengthSeconds;
+      const uploadDate = videoInfo.videoDetails.uploadDate;
+      const views = videoInfo.videoDetails.viewCount;
+      const url = `https://www.youtube.com/watch?v=${firstVideo.videoId}`;
+      const size = 'N/A'; 
+
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
           message: {
@@ -76,13 +86,13 @@ const song = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `𝞢𝙏𝞖𝞘𝞦-𝞛𝘿 Video Downloader\n\n`
+                text: `*𝞢𝙏𝞖𝞘𝞦-𝞛𝘿 VIDEO DOWNLAODER*\n\nTitle: ${title}\nAuthor: ${author}\nDuration: ${duration}s\nUpload Date: ${uploadDate}\nViews: ${views}\nURL: ${url}\nSize: ${size}`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
                 text: "© Powered By Ethix-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: firstVideo.thumbnail } }, { upload: Matrix.waUploadToServer })),
                 title: ``,
                 gifPlayback: true,
                 subtitle: "",
@@ -93,7 +103,7 @@ const song = async (m, Matrix) => {
                   {
                     name: "single_select",
                     buttonParamsJson: JSON.stringify({
-                      title: "🔖 Select a video",
+                      title: "🔖 SELECT A VIDEO",
                       sections: [
                         {
                           title: "😎 Top 10 YouTube Results - Videos",
@@ -106,7 +116,7 @@ const song = async (m, Matrix) => {
                   {
                     name: "single_select",
                     buttonParamsJson: JSON.stringify({
-                      title: "🎧 Select an audio",
+                      title: "🎧 SELECT AN AUDIO",
                       sections: [
                         {
                           title: "🎶 Top 10 YouTube Results - Audios",
@@ -157,23 +167,60 @@ const song = async (m, Matrix) => {
         const thumbnailUrl = selectedVideo.thumbnail; 
 
         if (selectedVideo.isAudio) {
- 
           const audioStream = ytdl(videoUrl, { filter: 'audioonly', quality: 'highestaudio' });
           const finalAudioBuffer = await streamToBuffer(audioStream);
-          
-          await Matrix.sendMessage(m.from, { image: { url: thumbnailUrl }, caption: `Title: ${title}\nAuther: ${author}\nDuration: ${duration}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`}, { quoted: m });
 
-          await Matrix.sendMessage(m.from, { audio: finalAudioBuffer, mimetype: 'audio/mpeg' }, { quoted: m });
+          await Matrix.sendMessage(m.from, 
+            { 
+              image: { url: thumbnailUrl }, 
+              caption: `Title: ${title}\nAuthor: ${author}\nDuration: ${duration}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
+              contextInfo: {
+                mentionedJid: [m.sender],
+                forwardingScore: 9999,
+                isForwarded: true,
+              } 
+            }, 
+            { quoted: m }
+          );
+
+          await Matrix.sendMessage(m.from, 
+            { 
+              audio: finalAudioBuffer, 
+              mimetype: 'audio/mpeg',
+              contextInfo: {
+                mentionedJid: [m.sender],
+                forwardingScore: 9999,
+                isForwarded: true,
+              }
+            }, 
+            { quoted: m }
+          );
         } else {
- 
           const videoStream = ytdl(videoUrl, { filter: 'audioandvideo', quality: 'highest' });
           const finalVideoBuffer = await streamToBuffer(videoStream);
 
-          await Matrix.sendMessage(m.from, { video: finalVideoBuffer, mimetype: 'video/mp4', caption: `Title: ${title}\nAuther: ${author}\nDuration: ${duration}\n\n> Powered by Ethix-MD` }, { quoted: m });
+          await Matrix.sendMessage(m.from, 
+            { 
+              video: finalVideoBuffer, 
+              mimetype: 'video/mp4', 
+              caption: `Title: ${title}\nAuthor: ${author}\nDuration: ${duration}\n\n> Powered by Ethix-MD`,
+              contextInfo: {
+                        externalAdReply: {
+                            showAdAttribution: true,
+                            title: `${title}`,
+                            body: `${author}`,
+                            thumbnailUrl: thumbnailUrl,
+                            sourceUrl: videoUrl,
+                            mediaType: 1,
+                            renderLargerThumbnail: true
+                        }
+                    }
+            }, 
+            { quoted: m }
+          );
         }
       } catch (error) {
         console.error("Error fetching video details:", error);
-        
       }
     } else {
       
