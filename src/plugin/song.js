@@ -49,7 +49,7 @@ const song = async (m, Matrix) => {
                 thumbnailUrl: videoInfo.thumbnail,
                 sourceUrl: videoInfo.url,
                 mediaType: 1,
-                renderLargerThumbnail: false,
+                renderLargerThumbnail: true,
               },
             },
           };
