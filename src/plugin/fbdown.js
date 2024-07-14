@@ -1,10 +1,9 @@
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
-import pkgg from 'nayan-media-downloader';
-const { ndown } = pkgg;
+import getFBInfo from '@xaviabot/fb-downloader';
 
 const fbSearchResultsMap = new Map();
-let fbSearchIndex = 1; 
+let fbSearchIndex = 1;
 
 const facebookCommand = async (m, Matrix) => {
   let selectedListId;
@@ -36,8 +35,8 @@ const facebookCommand = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
-      const fbData = await ndown(text);
-      if (!fbData.status) {
+      const fbData = await getFBInfo(text);
+      if (!fbData) {
         await m.reply('No results found.');
         await m.React("❌");
         return;
@@ -77,7 +76,7 @@ const facebookCommand = async (m, Matrix) => {
                 text: "© Powered By Ethix-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: fbData.thumbnail } }, { upload: Matrix.waUploadToServer })),
                 title: "",
                 gifPlayback: true,
                 subtitle: "",
