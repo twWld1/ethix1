@@ -33,6 +33,7 @@ const app = express();
 const orange = chalk.bold.hex("#FFA500");
 const lime = chalk.bold.hex("#32CD32");
 const PORT = process.env.PORT || 3000;
+let initialConnection = true;
 
 const MAIN_LOGGER = pino({
     timestamp: () => `,"time":"${new Date().toJSON()}"`
@@ -85,6 +86,8 @@ async function startSession(sessionId) {
     }
 
     async function start() {
+        let initialConnection = true; // Define initialConnection inside the start function
+
         try {
             const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
             const { version, isLatest } = await fetchLatestBaileysVersion();
@@ -106,16 +109,21 @@ async function startSession(sessionId) {
             });
 
             Matrix.ev.on('connection.update', (update) => {
-                const { connection, lastDisconnect } = update;
-                if (connection === 'close') {
-                    if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
-                        start();
-                    }
-                } else if (connection === 'open') {
-                    console.log(chalk.green(`😃 Integration Successful️ ✅ for ${sessionId}`));
-                    Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
+            const { connection, lastDisconnect } = update;
+            if (connection === 'close') {
+                if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+                    start();
                 }
-            });
+            } else if (connection === 'open') {
+                if (initialConnection) {
+                    console.log(chalk.green("😃 Integration Successful️ ✅"));
+                    Matrix.sendMessage(Matrix.user.id, { text: `😃 Integration Successful️ ✅` });
+                    initialConnection = false;
+                } else {
+                    console.log(chalk.blue("♻️ Connection reestablished after restart."));
+                }
+            }
+        });
 
             Matrix.ev.on('creds.update', saveCreds);
 
@@ -152,7 +160,7 @@ async function startSession(sessionId) {
     start();
 }
 
-const sessionIds = config.SESSION_ID.split(',').map(id => id.trim());
+const sessionIds = process.env.SESSION_ID.split(',').map(id => id.trim());
 sessionIds.forEach(startSession);
 
 app.get('/', (req, res) => {
