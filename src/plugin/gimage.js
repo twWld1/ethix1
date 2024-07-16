@@ -17,7 +17,7 @@ const imageCommand = async (m, sock) => {
     }
 
     try {
-      await m.react("📥");
+      await m.React("📥");
       const response = await axios.get(`https://api.guruapi.tech/api/googleimage?text=${encodeURIComponent(query)}`);
 
       if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
@@ -32,7 +32,7 @@ const imageCommand = async (m, sock) => {
 
         await sock.sendMessage(m.from, { image: imageBuffer, caption: '' }, { quoted: m });
       }
-      await m.react("✅");
+      await m.React("✅");
     } catch (error) {
       console.error("Error fetching images:", error);
       await sock.sendMessage(m.from, { text: 'Error fetching images.' });
