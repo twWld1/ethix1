@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = 'https://ethix-md-paircode.onrender.com';
+const apiBaseUrl = 'http://localhost:3000/get-pairing-code'; // Your local API endpoint
 
 const getPairingCode = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -13,7 +13,7 @@ const getPairingCode = async (m, Matrix) => {
   if (validCommands.includes(cmd)) {
     if (!text) return m.reply('Please provide a phone number with country code.');
 
-    const phoneNumberMatch = text.match(/^\+(\d+)\s+(\d+)$/);
+    const phoneNumberMatch = text.match(/^(\+\d{1,3})(\d+)$/);
     if (!phoneNumberMatch) return m.reply('Please provide a valid phone number with country code.');
 
     const countryCode = phoneNumberMatch[1];
@@ -23,14 +23,14 @@ const getPairingCode = async (m, Matrix) => {
       await m.React('🕘');
 
       const response = await axios.post(apiBaseUrl, {
-        countryCode: `+${countryCode}`,
+        countryCode,
         phoneNumber
       }, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       const result = response.data;
 
       if (result.pairingCode) {
