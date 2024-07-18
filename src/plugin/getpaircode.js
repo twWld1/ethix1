@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = 'https://ethix-md-paircode.onrender.com/pairing-code'; // Your API endpoint
+const apiBaseUrl = 'https://semantic-delcina-gssbotwa-ecdfac1a.koyeb.app/'; // Your API endpoint
 
 const getPairingCode = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -8,7 +8,7 @@ const getPairingCode = async (m, Matrix) => {
   const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).split(' ')[0].toLowerCase() : '';
   const text = m.body.slice(prefix.length + cmd.length).trim();
 
-  const validCommands = ['pair', 'paircode', 'pairingcode'];
+  const validCommands = ['pair', 'getsession', 'paircode', 'pairingcode'];
 
   if (validCommands.includes(cmd)) {
     if (!text) return m.reply('Please provide a phone number with country code.');
