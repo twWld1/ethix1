@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = 'http://localhost:3000/get-pairing-code'; // Your local API endpoint
+const apiBaseUrl = 'https://ethix-md-paircode.onrender.com'; 
 
 const getPairingCode = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
