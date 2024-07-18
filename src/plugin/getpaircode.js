@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = 'https://ethix-md-paircode.onrender.com'; 
+const apiBaseUrl = 'https://ethix-md-paircode.onrender.com/pairing-code'; // Your API endpoint
 
 const getPairingCode = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -23,8 +23,7 @@ const getPairingCode = async (m, Matrix) => {
       await m.React('🕘');
 
       const response = await axios.post(apiBaseUrl, {
-        countryCode,
-        phoneNumber
+        phoneNumber: countryCode + phoneNumber
       }, {
         headers: {
           'Content-Type': 'application/json'
