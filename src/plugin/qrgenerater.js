@@ -24,9 +24,8 @@ const toqr = async (m, gss) => {
     let medi = fs.readFileSync(path.join('./', buff));
 
     await gss.sendMessage(m.from, {
-      image: medi,
-      caption: 'QR code generated successfully!\n\n> © Powered By Ethix-MD'
-    }, {
+      document: medi,
+      mimetype: 'application/pdf'}, {
       quoted: m
     });
 
