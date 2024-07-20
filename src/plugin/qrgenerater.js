@@ -1,7 +1,6 @@
 import qrcode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
-import { createCanvas, loadImage } from 'canvas';
 import PDFDocument from 'pdfkit';
 
 const toqr = async (m, gss) => {
@@ -30,12 +29,7 @@ const toqr = async (m, gss) => {
     doc.pipe(writeStream);
 
     // Draw the QR code on the PDF
-    const canvas = createCanvas(200, 200);
-    const ctx = canvas.getContext('2d');
-    const img = await loadImage(data);
-    ctx.drawImage(img, 0, 0, 200, 200);
-
-    doc.image(canvas.toBuffer(), {
+    doc.image(data, {
       fit: [500, 500],
       align: 'center',
       valign: 'center',
