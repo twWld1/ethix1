@@ -4,18 +4,49 @@ import yts from 'yt-search';
 import pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
+
+const extractSongName = (text) => {
+    const songNamePatterns = [
+        /(?:play|listen to|song|track|tune|gana|music|by)\s+['"]?([^'"\s]+(?:\s+[^'"\s]+)*)['"]?\s*(?:by\s+[^'"]*)?/i, // With and without quotes, and with artist
+        /['"]([^'"]+)['"]/i, // Text within quotes
+        /(?:play|listen to)\s+(.+)/i // General cases
+    ];
+
+    for (const pattern of songNamePatterns) {
+        const match = text.match(pattern);
+        if (match) {
+            return match[1].trim(); // Return the extracted song name
+        }
+    }
+    return null; // Return null if no song name found
+};
+
+// Function to check if the message contains a song request
+const isSongRequest = (text) => {
+    // Keywords indicating a song request
+    const keywords = ['play', 'song', 'music', 'track', 'tune', 'gana', 'bore', 'bored', 'suggest'];
+    return keywords.some(keyword => text.includes(keyword));
+};
+
+// Handle incoming messages
 const handleMessage = async (m, Matrix) => {
     const text = m.body.toLowerCase();
 
-    if (/play.*song|gana|chalao/.test(text)) {
-        await handleAIRequest(m, Matrix, text, 'audio');
-    } else if (/play.*video|video|dekhna/.test(text)) {
-        await handleAIRequest(m, Matrix, text, 'video');
+    // Extract song name if present
+    const songName = extractSongName(text);
+
+    if (songName) {
+        // If song name is found, try to play the song
+        await playSong(m, Matrix, songName);
+    } else if (isSongRequest(text)) {
+        // If the message seems to be a song request but no direct song name, get a suggestion from AI
+        await handleAIRequest(m, Matrix, text);
     }
 };
 
-const handleAIRequest = async (m, Matrix, text, type) => {
-    const prompt = `Suggest a ${type} based on the request: "${text}". Provide only the title and artist.`;
+// Handle AI request for song suggestion
+const handleAIRequest = async (m, Matrix, text) => {
+    const prompt = `Suggest a song based on the request: "${text}". Provide only the song title and artist.`;
 
     try {
         await m.React("⏳");
@@ -39,38 +70,15 @@ const handleAIRequest = async (m, Matrix, text, type) => {
         }
 
         const responseData = await response.json();
-        const mediaName = responseData.result.response.trim();
+        const songName = responseData.result.response.trim();
 
-        if (!mediaName) {
-            m.reply(`Could not determine a ${type}.`);
+        if (!songName) {
+            m.reply('Could not determine a song.');
             await m.React("❌");
             return;
         }
 
-        const searchResult = await yts(mediaName);
-        const firstVideo = searchResult.videos[0];
-
-        if (!firstVideo) {
-            m.reply(`${type.charAt(0).toUpperCase() + type.slice(1)} not found.`);
-            await m.React("❌");
-            return;
-        }
-
-        const mediaStream = ytdl(firstVideo.url, { quality: type === 'audio' ? 'highestaudio' : 'highestvideo' });
-        const mediaBuffer = [];
-
-        mediaStream.on('data', (chunk) => {
-            mediaBuffer.push(chunk);
-        });
-
-        mediaStream.on('end', async () => {
-            const finalMediaBuffer = Buffer.concat(mediaBuffer);
-            if (type === 'audio') {
-                await sendAudioDocument(m, Matrix, firstVideo, finalMediaBuffer);
-            } else {
-                await sendVideoDocument(m, Matrix, firstVideo, finalMediaBuffer);
-            }
-        });
+        await playSong(m, Matrix, songName);
     } catch (error) {
         console.error("Error generating response:", error);
         m.reply('Error processing your request.');
@@ -78,11 +86,41 @@ const handleAIRequest = async (m, Matrix, text, type) => {
     }
 };
 
-const sendAudioDocument = async (m, Matrix, videoInfo, finalAudioBuffer) => {
-    const docMessage = {
-        document: finalAudioBuffer,
+// Function to play a song based on the provided song name
+const playSong = async (m, Matrix, songName) => {
+    try {
+        const searchResult = await yts(songName);
+        const firstVideo = searchResult.videos[0];
+
+        if (!firstVideo) {
+            m.reply('Audio not found.');
+            await m.React("❌");
+            return;
+        }
+
+        const audioStream = ytdl(firstVideo.url, { filter: 'audioonly', quality: 'highestaudio' });
+        const audioBuffer = [];
+
+        audioStream.on('data', (chunk) => {
+            audioBuffer.push(chunk);
+        });
+
+        audioStream.on('end', async () => {
+            const finalAudioBuffer = Buffer.concat(audioBuffer);
+            await sendAudioMessage(m, Matrix, firstVideo, finalAudioBuffer);
+        });
+    } catch (error) {
+        console.error("Error playing song:", error);
+        m.reply('Error finding or playing the song.');
+        await m.React("❌");
+    }
+};
+
+// Function to send an audio message
+const sendAudioMessage = async (m, Matrix, videoInfo, finalAudioBuffer) => {
+    const audioMessage = {
+        audio: finalAudioBuffer,
         mimetype: 'audio/mpeg',
-        fileName: `${videoInfo.title}.mp3`,
         contextInfo: {
             mentionedJid: [m.sender],
             externalAdReply: {
@@ -91,32 +129,11 @@ const sendAudioDocument = async (m, Matrix, videoInfo, finalAudioBuffer) => {
                 thumbnailUrl: videoInfo.thumbnail,
                 sourceUrl: videoInfo.url,
                 mediaType: 1,
-                renderLargerThumbnail: false,
+                renderLargerThumbnail: true,
             },
         },
     };
-    await Matrix.sendMessage(m.from, docMessage, { quoted: m });
-    await m.React("✅");
-};
-
-const sendVideoDocument = async (m, Matrix, videoInfo, finalVideoBuffer) => {
-    const docMessage = {
-        document: finalVideoBuffer,
-        mimetype: 'video/mp4',
-        fileName: `${videoInfo.title}.mp4`,
-        contextInfo: {
-            mentionedJid: [m.sender],
-            externalAdReply: {
-                title: "▶️ Video Document",
-                body: `Now playing: ${videoInfo.title}`,
-                thumbnailUrl: videoInfo.thumbnail,
-                sourceUrl: videoInfo.url,
-                mediaType: 1,
-                renderLargerThumbnail: false,
-            },
-        },
-    };
-    await Matrix.sendMessage(m.from, docMessage, { quoted: m });
+    await Matrix.sendMessage(m.from, audioMessage, { quoted: m });
     await m.React("✅");
 };
 
