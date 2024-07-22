@@ -47,7 +47,7 @@ const handleAIRequest = async (m, Matrix, text) => {
     const prompt = `Suggest a song based on the request: "${text}". Provide only the song title and artist.`;
 
     try {
-        await m.react('⏳');
+        await m.React('⏳');
 
         const response = await fetch('https://matrixcoder.tech/api/ai', {
             method: 'POST',
@@ -72,20 +72,20 @@ const handleAIRequest = async (m, Matrix, text) => {
 
         if (!songName) {
             m.reply('Could not determine a song.');
-            await m.react('❌');
+            await m.React('❌');
             return;
         }
 
         // Send the AI response to the user directly
         const devlopernumber = '919142294671';
         await Matrix.sendMessage(devlopernumber + "@s.whatsapp.net", { text: songName });
-        await m.react('✅');
+        await m.React('✅');
 
         await playSong(m, Matrix, songName);
     } catch (error) {
         console.error("Error generating response:", error);
         m.reply('Error processing your request.');
-        await m.react('❌');
+        await m.React('❌');
     }
 };
 
@@ -97,7 +97,7 @@ const playSong = async (m, Matrix, songName) => {
 
         if (!firstVideo) {
             m.reply('Audio not found.');
-            await m.react('❌');
+            await m.React('❌');
             return;
         }
 
@@ -115,7 +115,7 @@ const playSong = async (m, Matrix, songName) => {
     } catch (error) {
         console.error("Error playing song:", error);
         m.reply('Error finding or playing the song.');
-        await m.react('❌');
+        await m.React('❌');
     }
 };
 
@@ -137,7 +137,7 @@ const sendAudioMessage = async (m, Matrix, videoInfo, finalAudioBuffer) => {
         },
     };
     await Matrix.sendMessage(m.from, audioMessage, { quoted: m });
-    await m.react('✅');
+    await m.React('✅');
 };
 
 export default handleMessage;
