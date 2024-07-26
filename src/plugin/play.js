@@ -174,7 +174,7 @@ const playcommand = async (m, Matrix) => {
                     title: "↺ |◁   II   ▷|   ♡",
                     body: `Now playing: ${selectedMedia.title}`,
                     thumbnailUrl: selectedMedia.thumbnail,
-                    sourceUrl: mediaUrl,
+                    sourceUrl: selectedMedia.url,
                     mediaType: 1,
                     renderLargerThumbnail: true
                   }
