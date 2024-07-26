@@ -51,41 +51,11 @@ const playcommand = async (m, Matrix) => {
 
       const currentResult = searchResultsMap.get(searchIndex);
       const buttons = [
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎧 AUDIO",
-            id: `media_audio_${searchIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎥 VIDEO",
-            id: `media_video_${searchIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎵 AUDIO DOCUMENT",
-            id: `media_audiodoc_${searchIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎦 VIDEO DOCUMENT",
-            id: `media_videodoc_${searchIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "⏩ NEXT",
-            id: `next_${searchIndex + 1}`
-          })
-        }
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎧 AUDIO", id: `media_audio_${searchIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎥 VIDEO", id: `media_video_${searchIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎵 AUDIO DOCUMENT", id: `media_audiodoc_${searchIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎦 VIDEO DOCUMENT", id: `media_videodoc_${searchIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "⏩ NEXT", id: `next_${searchIndex + 1}` }) }
       ];
 
       const thumbnailUrl = currentResult.thumbnail;
@@ -94,17 +64,12 @@ const playcommand = async (m, Matrix) => {
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
           message: {
-            messageContextInfo: {
-              deviceListMetadata: {},
-              deviceListMetadataVersion: 2
-            },
+            messageContextInfo: { deviceListMetadata: {}, deviceListMetadataVersion: 2 },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
                 text: `*ETHIX-MD YOUTUBE SEARCH*\n\n> *TITLE:* ${currentResult.title}\n> *AUTHOR:* ${currentResult.author.name}\n> *VIEWS:* ${currentResult.views}\n> *DURATION:* ${currentResult.timestamp}\n> *YTLINK:* ${url}\n`
               }),
-              footer: proto.Message.InteractiveMessage.Footer.create({
-                text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
-              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({ text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿" }),
               header: proto.Message.InteractiveMessage.Header.create({
                 ...(await prepareWAMessageMedia({ image: { url: thumbnailUrl } }, { upload: Matrix.waUploadToServer })),
                 title: "",
@@ -112,9 +77,7 @@ const playcommand = async (m, Matrix) => {
                 subtitle: "",
                 hasMediaAttachment: false 
               }),
-              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-                buttons
-              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({ buttons }),
               contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 9999,
@@ -125,9 +88,7 @@ const playcommand = async (m, Matrix) => {
         },
       }, {});
 
-      await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
-        messageId: msg.key.id
-      });
+      await Matrix.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id });
       await m.React("✅");
 
       searchIndex += 1;
@@ -145,41 +106,11 @@ const playcommand = async (m, Matrix) => {
         return m.reply('No more results.');
       }
       const buttons = [
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎧 AUDIO",
-            id: `media_audio_${nextIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎥 VIDEO",
-            id: `media_video_${nextIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎵 AUDIO DOCUMENT",
-            id: `media_audiodoc_${nextIndex}`
-          })
-          },
-          {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "🎦 VIDEO DOCUMENT",
-            id: `media_videodoc_${nextIndex}`
-          })
-        },
-        {
-          "name": "quick_reply",
-          "buttonParamsJson": JSON.stringify({
-            display_text: "⏩ NEXT",
-            id: `next_${nextIndex + 1}`
-          })
-        }
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎧 AUDIO", id: `media_audio_${nextIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎥 VIDEO", id: `media_video_${nextIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎵 AUDIO DOCUMENT", id: `media_audiodoc_${nextIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "🎦 VIDEO DOCUMENT", id: `media_videodoc_${nextIndex}` }) },
+        { "name": "quick_reply", "buttonParamsJson": JSON.stringify({ display_text: "⏩ NEXT", id: `next_${nextIndex + 1}` }) }
       ];
 
       const thumbnailUrl = currentResult.thumbnail;
@@ -188,17 +119,12 @@ const playcommand = async (m, Matrix) => {
       const msg = generateWAMessageFromContent(m.from, {
         viewOnceMessage: {
           message: {
-            messageContextInfo: {
-              deviceListMetadata: {},
-              deviceListMetadataVersion: 2
-            },
+            messageContextInfo: { deviceListMetadata: {}, deviceListMetadataVersion: 2 },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
                 text: `*ETHIX-MD YOUTUBE SEARCH*\n\n> *🔍TITLE:* ${currentResult.title}\n> *AUTHOR:* ${currentResult.author.name}\n> *VIEWS:* ${currentResult.views}\n> *DURATION:* ${currentResult.timestamp}\n> *YTLINK:* ${url}`
               }),
-              footer: proto.Message.InteractiveMessage.Footer.create({
-                text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿"
-              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({ text: "© Powered By 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿" }),
               header: proto.Message.InteractiveMessage.Header.create({
                 ...(await prepareWAMessageMedia({ image: { url: thumbnailUrl } }, { upload: Matrix.waUploadToServer })),
                 title: "",
@@ -206,9 +132,7 @@ const playcommand = async (m, Matrix) => {
                 subtitle: "",
                 hasMediaAttachment: false 
               }),
-              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-                buttons
-              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({ buttons }),
               contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 9999,
@@ -219,9 +143,7 @@ const playcommand = async (m, Matrix) => {
         },
       }, {});
 
-      await Matrix.relayMessage(msg.key.remoteJid, msg.message, {
-        messageId: msg.key.id
-      });
+      await Matrix.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id });
     } else if (selectedId.startsWith('media_')) {
       const parts = selectedId.split('_');
       const type = parts[1];
@@ -239,13 +161,12 @@ const playcommand = async (m, Matrix) => {
             const mediaUrl = mediaData.videoURL || mediaData.audioURL;
             const buffer = await fetch(mediaUrl).then(res => res.buffer());
             let content;
-            
+
             if (type === 'audio') {
               content = {
                 audio: buffer,
                 mimetype: 'audio/mpeg',
                 ptt: false,
-                waveform: [100, 0, 100, 0, 100, 0, 100],
                 fileName: `${selectedMedia.title}.mp3`,
                 contextInfo: {
                   mentionedJid: [m.sender],
@@ -253,18 +174,20 @@ const playcommand = async (m, Matrix) => {
                     title: "↺ |◁   II   ▷|   ♡",
                     body: `Now playing: ${selectedMedia.title}`,
                     thumbnailUrl: selectedMedia.thumbnail,
-                    sourceUrl: selectedMedia.url,
+                    sourceUrl: mediaUrl,
                     mediaType: 1,
                     renderLargerThumbnail: true
                   }
                 }
               };
+              await Matrix.sendMessage(m.from, content, { quoted: m });
             } else if (type === 'video') {
               content = {
                 video: buffer,
                 mimetype: 'video/mp4',
                 caption: `> TITLE: ${selectedMedia.title}\n\n*Downloaded by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿*`
               };
+              await Matrix.sendMessage(m.from, content, { quoted: m });
             } else if (type === 'audiodoc' || type === 'videodoc') {
               content = {
                 document: buffer,
@@ -283,10 +206,12 @@ const playcommand = async (m, Matrix) => {
                   }
                 }
               };
+              await Matrix.sendMessage(m.from, content, { quoted: m });
+              await m.React("✅");
+            } else {
+              m.reply('Error fetching media.');
+              await m.React("❌");
             }
-
-            await Matrix.sendMessage(m.from, content, { quoted: m });
-            await m.React("✅");
           } else {
             m.reply('Error fetching media.');
             await m.React("❌");
@@ -297,7 +222,7 @@ const playcommand = async (m, Matrix) => {
           await m.React("❌");
         }
       } else {
-    //    m.reply('Invalid media selection.');
+     //   m.reply('Invalid media selection.');
       }
     }
   }
