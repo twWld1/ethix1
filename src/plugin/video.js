@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import yts from 'yt-search';
 
 const video = async (m, Matrix) => {
@@ -14,15 +15,12 @@ const video = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
-      const isUrl = text.includes('youtube.com/watch?v=') || text.includes('youtu.be/');
-      await m.React("⬇️");
-
-      const sendVideoMessage = async (videoInfo, videoBuffer) => {
+      const sendVideoMessage = async (videoDetails, videoBuffer) => {
         const messageContent = {
           [cmd === 'ytmp4doc' ? 'document' : 'video']: videoBuffer,
           mimetype: 'video/mp4',
-          fileName: `${videoInfo.title}.mp4`,
-          caption: `> ${videoInfo.title}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
+          fileName: `${videoDetails.title}.mp4`,
+          caption: `> ${videoDetails.title}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
         };
         await Matrix.sendMessage(m.from, messageContent, { quoted: m });
         await m.React("✅");
@@ -33,41 +31,29 @@ const video = async (m, Matrix) => {
         return response.buffer();
       };
 
-      if (isUrl) {
-        const videoId = text.split('v=')[1] || text.split('youtu.be/')[1];
-        const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(text)}&type=video`;
+      const isUrl = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=/.test(text);
+      let videoInfo;
 
-        try {
-          const videoInfo = await yts({ videoId });
-          const videoBuffer = await fetchVideoBuffer(apiUrl);
-          await sendVideoMessage(videoInfo, videoBuffer);
-        } catch (err) {
-          console.error('Error sending video:', err);
-          m.reply('Error sending video.');
-          await m.React("❌");
-        }
+      if (isUrl) {
+        videoInfo = await yts({ videoId: new URL(text).searchParams.get('v') });
       } else {
         const searchResult = await yts(text);
-        const firstVideo = searchResult.videos[0];
-        await m.React("⬇️");
-
-        if (!firstVideo) {
+        videoInfo = searchResult.videos[0];
+        if (!videoInfo) {
           m.reply('Video not found.');
           await m.React("❌");
           return;
         }
-
-        const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(firstVideo.url)}&type=video`;
-
-        try {
-          const videoBuffer = await fetchVideoBuffer(apiUrl);
-          await sendVideoMessage(firstVideo, videoBuffer);
-        } catch (err) {
-          console.error('Error sending video:', err);
-          m.reply('Error sending video.');
-          await m.React("❌");
-        }
       }
+
+      const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(videoInfo.url)}&type=video`;
+
+      const apiResponse = await fetch(apiUrl);
+      const { videoDetails, videoURL } = await apiResponse.json();
+
+      const videoBuffer = await fetchVideoBuffer(videoURL);
+      await sendVideoMessage(videoDetails, videoBuffer);
+
     } catch (error) {
       console.error("Error generating response:", error);
       m.reply('An error occurred while processing your request.');
