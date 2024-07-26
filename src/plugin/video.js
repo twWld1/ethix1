@@ -1,4 +1,3 @@
-import ytdl from '@distube/ytdl-core';
 import yts from 'yt-search';
 
 const video = async (m, Matrix) => {
@@ -15,48 +14,38 @@ const video = async (m, Matrix) => {
     try {
       await m.React("🕘");
 
-      const isUrl = ytdl.validateURL(text);
+      const isUrl = text.includes('youtube.com/watch?v=') || text.includes('youtu.be/');
       await m.React("⬇️");
 
-      const sendVideoMessage = async (videoInfo, finalVideoBuffer) => {
-        if (cmd === 'ytmp4doc') {
-          const docMessage = {
-            document: finalVideoBuffer,
-            mimetype: 'video/mp4',
-            fileName: `${videoInfo.title}.mp4`,
-            caption: `> ${videoInfo.title}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
-          };
-          await Matrix.sendMessage(m.from, docMessage, { quoted: m });
-        } else {
-          const videoMessage = {
-            video: finalVideoBuffer,
-            mimetype: 'video/mp4',
-            caption: `> ${videoInfo.title}\n> © POWERED BY 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
-          };
-          await Matrix.sendMessage(m.from, videoMessage, { quoted: m });
-        }
+      const sendVideoMessage = async (videoInfo, videoBuffer) => {
+        const messageContent = {
+          [cmd === 'ytmp4doc' ? 'document' : 'video']: videoBuffer,
+          mimetype: 'video/mp4',
+          fileName: `${videoInfo.title}.mp4`,
+          caption: `> ${videoInfo.title}\n> © Powered by 𝞢𝙏𝞖𝞘𝞦-𝞛𝘿`,
+        };
+        await Matrix.sendMessage(m.from, messageContent, { quoted: m });
         await m.React("✅");
       };
 
+      const fetchVideoBuffer = async (url) => {
+        const response = await fetch(url);
+        return response.buffer();
+      };
+
       if (isUrl) {
-        const videoStream = ytdl(text, { filter: 'audioandvideo', quality: 'highest' });
-        const videoBuffer = [];
+        const videoId = text.split('v=')[1] || text.split('youtu.be/')[1];
+        const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(text)}&type=video`;
 
-        videoStream.on('data', (chunk) => {
-          videoBuffer.push(chunk);
-        });
-
-        videoStream.on('end', async () => {
-          try {
-            const finalVideoBuffer = Buffer.concat(videoBuffer);
-            const videoInfo = await yts({ videoId: ytdl.getURLVideoID(text) });
-            await sendVideoMessage(videoInfo, finalVideoBuffer);
-          } catch (err) {
-            console.error('Error sending video:', err);
-            m.reply('Error sending video.');
-            await m.React("❌");
-          }
-        });
+        try {
+          const videoInfo = await yts({ videoId });
+          const videoBuffer = await fetchVideoBuffer(apiUrl);
+          await sendVideoMessage(videoInfo, videoBuffer);
+        } catch (err) {
+          console.error('Error sending video:', err);
+          m.reply('Error sending video.');
+          await m.React("❌");
+        }
       } else {
         const searchResult = await yts(text);
         const firstVideo = searchResult.videos[0];
@@ -68,23 +57,16 @@ const video = async (m, Matrix) => {
           return;
         }
 
-        const videoStream = ytdl(firstVideo.url, { filter: 'audioandvideo', quality: 'highest' });
-        const videoBuffer = [];
+        const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(firstVideo.url)}&type=video`;
 
-        videoStream.on('data', (chunk) => {
-          videoBuffer.push(chunk);
-        });
-
-        videoStream.on('end', async () => {
-          try {
-            const finalVideoBuffer = Buffer.concat(videoBuffer);
-            await sendVideoMessage(firstVideo, finalVideoBuffer);
-          } catch (err) {
-            console.error('Error sending video:', err);
-            m.reply('Error sending video.');
-            await m.React("❌");
-          }
-        });
+        try {
+          const videoBuffer = await fetchVideoBuffer(apiUrl);
+          await sendVideoMessage(firstVideo, videoBuffer);
+        } catch (err) {
+          console.error('Error sending video:', err);
+          m.reply('Error sending video.');
+          await m.React("❌");
+        }
       }
     } catch (error) {
       console.error("Error generating response:", error);
