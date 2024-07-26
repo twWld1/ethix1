@@ -1,4 +1,4 @@
-import ytdl from '@distube/ytdl-core';
+import fetch from 'node-fetch';
 import yts from 'yt-search';
 
 const song = async (m, Matrix) => {
@@ -10,90 +10,60 @@ const song = async (m, Matrix) => {
   const validCommands = ['song', 'ytmp3', 'music', 'ytmp3doc'];
 
   if (validCommands.includes(cmd)) {
-    if (!text) return m.reply('Please provide a YT URL or search query.');
+    if (!text) return m.reply('Please provide a YouTube URL or search query.');
 
     try {
       await m.React("🕘");
 
-      const isUrl = ytdl.validateURL(text);
-
-      const sendAudioMessage = async (videoInfo, finalAudioBuffer) => {
-
-        if (cmd === 'ytmp3doc') {
-          const docMessage = {
-            document: finalAudioBuffer,
-            mimetype: 'audio/mpeg',
-            fileName: `${videoInfo.title}.mp3`,
-            contextInfo: {
-              mentionedJid: [m.sender],
-              externalAdReply: {
-                title: "↺ |◁   II   ▷|   ♡",
-                body: `Now playing: ${videoInfo.title}`,
-                thumbnailUrl: videoInfo.thumbnail,
-                sourceUrl: videoInfo.url,
-                mediaType: 1,
-                renderLargerThumbnail: false,
-              },
+      const sendAudioMessage = async (videoDetails, audioBuffer) => {
+        const messageContent = {
+          [cmd === 'ytmp3doc' ? 'document' : 'audio']: audioBuffer,
+          mimetype: 'audio/mpeg',
+          fileName: `${videoDetails.title}.mp3`,
+          contextInfo: {
+            mentionedJid: [m.sender],
+            externalAdReply: {
+              title: "↺ |◁   II   ▷|   ♡",
+              body: `Now playing: ${videoDetails.title}`,
+              thumbnailUrl: videoDetails.thumbnail,
+              sourceUrl: videoDetails.url,
+              mediaType: 1,
+              renderLargerThumbnail: true,
             },
-          };
-          await Matrix.sendMessage(m.from, docMessage, { quoted: m });
-        } else {
-          const audioMessage = {
-            audio: finalAudioBuffer,
-            mimetype: 'audio/mpeg',
-            contextInfo: {
-              mentionedJid: [m.sender],
-              externalAdReply: {
-                title: "↺ |◁   II   ▷|   ♡",
-                body: `Now playing: ${videoInfo.title}`,
-                thumbnailUrl: videoInfo.thumbnail,
-                sourceUrl: videoInfo.url,
-                mediaType: 1,
-                renderLargerThumbnail: true,
-              },
-            },
-          };
-          await Matrix.sendMessage(m.from, audioMessage, { quoted: m });
-        }
-
+          },
+        };
+        await Matrix.sendMessage(m.from, messageContent, { quoted: m });
         await m.React("✅");
       };
 
+      const fetchAudioBuffer = async (url) => {
+        const response = await fetch(url);
+        return response.buffer();
+      };
+
+      const isUrl = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=/.test(text);
+      let videoInfo;
+
       if (isUrl) {
-        const audioStream = ytdl(text, { filter: 'audioonly', quality: 'highestaudio' });
-        const audioBuffer = [];
-
-        audioStream.on('data', (chunk) => {
-          audioBuffer.push(chunk);
-        });
-
-        audioStream.on('end', async () => {
-          const finalAudioBuffer = Buffer.concat(audioBuffer);
-          const videoInfo = await yts({ videoId: ytdl.getURLVideoID(text) });
-          await sendAudioMessage(videoInfo, finalAudioBuffer);
-        });
+        videoInfo = await yts({ videoId: new URL(text).searchParams.get('v') });
       } else {
         const searchResult = await yts(text);
-        const firstVideo = searchResult.videos[0];
-
-        if (!firstVideo) {
+        videoInfo = searchResult.videos[0];
+        if (!videoInfo) {
           m.reply('Audio not found.');
           await m.React("❌");
           return;
         }
-
-        const audioStream = ytdl(firstVideo.url, { filter: 'audioonly', quality: 'highestaudio' });
-        const audioBuffer = [];
-
-        audioStream.on('data', (chunk) => {
-          audioBuffer.push(chunk);
-        });
-
-        audioStream.on('end', async () => {
-          const finalAudioBuffer = Buffer.concat(audioBuffer);
-          await sendAudioMessage(firstVideo, finalAudioBuffer);
-        });
       }
+
+      const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(videoInfo.url)}&type=audio`;
+
+      const apiResponse = await fetch(apiUrl);
+      const { videoDetails, videoURL } = await apiResponse.json();
+
+      const audioBuffer = await fetchAudioBuffer(videoURL);
+      await sendAudioMessage(videoDetails, audioBuffer);
+
     } catch (error) {
       console.error("Error generating response:", error);
       m.reply('Error processing your request.');
