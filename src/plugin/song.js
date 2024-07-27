@@ -1,5 +1,14 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import yts from 'yt-search';
+
+const fetchAudioDetails = async (url) => {
+  try {
+    const response = await axios.get(`https://matrix-serverless-api.vercel.app/api/ytdl?url=${url}&type=audio`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Error fetching audio details.');
+  }
+};
 
 const song = async (m, Matrix) => {
   const prefixMatch = m.body.match(/^[\\/!#.]/);
@@ -10,64 +19,72 @@ const song = async (m, Matrix) => {
   const validCommands = ['song', 'ytmp3', 'music', 'ytmp3doc'];
 
   if (validCommands.includes(cmd)) {
-    if (!text) return m.reply('Please provide a YouTube URL or search query.');
+    if (!text) return m.reply('Please provide a YT URL or search query.');
 
     try {
       await m.React("🕘");
 
-      const sendAudioMessage = async (videoDetails, audioBuffer) => {
-        const messageContent = {
-          [cmd === 'ytmp3doc' ? 'document' : 'audio']: audioBuffer,
-          mimetype: 'audio/mpeg',
-          fileName: `${videoDetails.title}.mp3`,
-          contextInfo: {
-            mentionedJid: [m.sender],
-            externalAdReply: {
-              title: "↺ |◁   II   ▷|   ♡",
-              body: `Now playing: ${videoDetails.title}`,
-              thumbnailUrl: videoDetails.thumbnail,
-              sourceUrl: videoDetails.url,
-              mediaType: 1,
-              renderLargerThumbnail: true,
+      const isUrl = text.includes('youtube.com') || text.includes('youtu.be');
+
+      const sendAudioMessage = async (videoInfo, audioURL) => {
+        const responseBuffer = await axios.get(audioURL, { responseType: 'arraybuffer' });
+
+        if (cmd === 'ytmp3doc') {
+          const docMessage = {
+            document: Buffer.from(responseBuffer.data),
+            mimetype: 'audio/mpeg',
+            fileName: `${videoInfo.title}.mp3`,
+            contextInfo: {
+              mentionedJid: [m.sender],
+              externalAdReply: {
+                title: "↺ |◁   II   ▷|   ♡",
+                body: `Now playing: ${videoInfo.title}`,
+                thumbnailUrl: videoInfo.thumbnail,
+                sourceUrl: videoInfo.url,
+                mediaType: 1,
+                renderLargerThumbnail: false,
+              },
             },
-          },
-        };
-        await Matrix.sendMessage(m.from, messageContent, { quoted: m });
+          };
+          await Matrix.sendMessage(m.from, docMessage, { quoted: m });
+        } else {
+          const audioMessage = {
+            audio: Buffer.from(responseBuffer.data),
+            mimetype: 'audio/mpeg',
+            contextInfo: {
+              mentionedJid: [m.sender],
+              externalAdReply: {
+                title: "↺ |◁   II   ▷|   ♡",
+                body: `Now playing: ${videoInfo.title}`,
+                thumbnailUrl: videoInfo.thumbnail,
+                sourceUrl: videoInfo.url,
+                mediaType: 1,
+                renderLargerThumbnail: true,
+              },
+            },
+          };
+          await Matrix.sendMessage(m.from, audioMessage, { quoted: m });
+        }
+
         await m.React("✅");
       };
 
-      const fetchAudioBuffer = async (url) => {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch audio buffer.');
-        return response.buffer();
-      };
-
-      const isUrl = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=/.test(text);
-      let videoInfo;
-
       if (isUrl) {
-        const videoId = new URL(text).searchParams.get('v');
-        const searchResult = await yts({ videoId });
-        videoInfo = searchResult.videos[0];
+        const { videoDetails, audioURL } = await fetchAudioDetails(text);
+        await sendAudioMessage(videoDetails, audioURL);
       } else {
         const searchResult = await yts(text);
-        videoInfo = searchResult.videos[0];
-        if (!videoInfo) {
+        const firstVideo = searchResult.videos[0];
+
+        if (!firstVideo) {
           m.reply('Audio not found.');
           await m.React("❌");
           return;
         }
+
+        const { videoDetails, audioURL } = await fetchAudioDetails(firstVideo.url);
+        await sendAudioMessage(videoDetails, audioURL);
       }
-
-      const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(videoInfo.url)}&type=audio`;
-
-      const apiResponse = await fetch(apiUrl);
-      if (!apiResponse.ok) throw new Error('Failed to fetch video details.');
-      const { videoDetails, videoURL } = await apiResponse.json();
-
-      const audioBuffer = await fetchAudioBuffer(videoURL);
-      await sendAudioMessage(videoDetails, audioBuffer);
-
     } catch (error) {
       console.error("Error generating response:", error);
       m.reply('Error processing your request.');
