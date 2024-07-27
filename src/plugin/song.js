@@ -13,7 +13,7 @@ const song = async (m, Matrix) => {
     if (!text) return m.reply('Please provide a YouTube URL or search query.');
 
     try {
-      await m.React("🕘");
+      await m.react("🕘");
 
       const sendAudioMessage = async (videoDetails, audioBuffer) => {
         const messageContent = {
@@ -33,11 +33,12 @@ const song = async (m, Matrix) => {
           },
         };
         await Matrix.sendMessage(m.from, messageContent, { quoted: m });
-        await m.React("✅");
+        await m.react("✅");
       };
 
       const fetchAudioBuffer = async (url) => {
         const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch audio buffer.');
         return response.buffer();
       };
 
@@ -45,13 +46,15 @@ const song = async (m, Matrix) => {
       let videoInfo;
 
       if (isUrl) {
-        videoInfo = await yts({ videoId: new URL(text).searchParams.get('v') });
+        const videoId = new URL(text).searchParams.get('v');
+        const searchResult = await yts({ videoId });
+        videoInfo = searchResult.videos[0];
       } else {
         const searchResult = await yts(text);
         videoInfo = searchResult.videos[0];
         if (!videoInfo) {
           m.reply('Audio not found.');
-          await m.React("❌");
+          await m.react("❌");
           return;
         }
       }
@@ -59,6 +62,7 @@ const song = async (m, Matrix) => {
       const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(videoInfo.url)}&type=audio`;
 
       const apiResponse = await fetch(apiUrl);
+      if (!apiResponse.ok) throw new Error('Failed to fetch video details.');
       const { videoDetails, videoURL } = await apiResponse.json();
 
       const audioBuffer = await fetchAudioBuffer(videoURL);
@@ -67,7 +71,7 @@ const song = async (m, Matrix) => {
     } catch (error) {
       console.error("Error generating response:", error);
       m.reply('Error processing your request.');
-      await m.React("❌");
+      await m.react("❌");
     }
   }
 };
