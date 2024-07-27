@@ -13,7 +13,7 @@ const song = async (m, Matrix) => {
     if (!text) return m.reply('Please provide a YouTube URL or search query.');
 
     try {
-      await m.react("🕘");
+      await m.React("🕘");
 
       const sendAudioMessage = async (videoDetails, audioBuffer) => {
         const messageContent = {
@@ -33,7 +33,7 @@ const song = async (m, Matrix) => {
           },
         };
         await Matrix.sendMessage(m.from, messageContent, { quoted: m });
-        await m.react("✅");
+        await m.React("✅");
       };
 
       const fetchAudioBuffer = async (url) => {
@@ -54,7 +54,7 @@ const song = async (m, Matrix) => {
         videoInfo = searchResult.videos[0];
         if (!videoInfo) {
           m.reply('Audio not found.');
-          await m.react("❌");
+          await m.React("❌");
           return;
         }
       }
@@ -71,7 +71,7 @@ const song = async (m, Matrix) => {
     } catch (error) {
       console.error("Error generating response:", error);
       m.reply('Error processing your request.');
-      await m.react("❌");
+      await m.React("❌");
     }
   }
 };
