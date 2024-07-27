@@ -1,5 +1,5 @@
 import ytSearch from 'yt-search';
-import fetch from 'node-fetch';
+import axios from 'axios';
 import pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto, prepareWAMessageMedia } = pkg;
 
@@ -152,14 +152,15 @@ const playcommand = async (m, Matrix) => {
 
       if (selectedMedia) {
         try {
-          const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(selectedMedia.url)}&type=${type.includes('audio') ? 'audio' : 'video'}`;
+          const mediaType = type.includes('audio') ? 'audio' : 'video';
+          const apiUrl = `https://matrix-serverless-api.vercel.app/api/ytdl?url=${encodeURIComponent(selectedMedia.url)}&type=${mediaType}`;
 
-          const response = await fetch(apiUrl);
-          const mediaData = await response.json();
+          const { data: mediaData } = await axios.get(apiUrl);
 
-          if (response.ok) {
+          if (mediaData.videoURL || mediaData.audioURL) {
             const mediaUrl = mediaData.videoURL || mediaData.audioURL;
-            const buffer = await fetch(mediaUrl).then(res => res.buffer());
+            const { data: buffer } = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
+
             let content;
 
             if (type === 'audio') {
@@ -222,7 +223,7 @@ const playcommand = async (m, Matrix) => {
           await m.React("❌");
         }
       } else {
-     //   m.reply('Invalid media selection.');
+        // m.reply('Invalid media selection.'); // Uncomment if needed
       }
     }
   }
