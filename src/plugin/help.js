@@ -76,7 +76,7 @@ const test = async (m, Matrix) => {
     public: true // or false
 };
 
-let mode = ethix.public ? 'public' : 'private';
+let mode = ethix.public ? 'private' : 'public';
 
         const validCommands = ['list', 'help', 'menu'];
 
