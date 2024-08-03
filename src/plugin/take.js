@@ -25,13 +25,7 @@ const handleTakeCommand = async (m, gss) => {
   const mediaBuffer = await quoted.download();
   if (!mediaBuffer) throw new Error('Failed to download media.');
 
-  if (quoted.mtype === 'imageMessage') {
-    await gss.sendImageAsSticker(m.from, mediaBuffer, m, { packname: global.packname, author: global.author });
-  } else if (quoted.mtype === 'videoMessage') {
-    await gss.sendVideoAsSticker(m.from, mediaBuffer, m, { packname: global.packname, author: global.author });
-  } else {
-    return m.reply('Unsupported media type.');
-  }
+  await gss.sendImageAsSticker(m.from, mediaBuffer, m, { packname: global.packname, author: global.author });
 };
 
 export default handleTakeCommand;
