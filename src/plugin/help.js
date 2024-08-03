@@ -1,7 +1,6 @@
 import moment from 'moment-timezone';
 import fs from 'fs';
 import os from 'os';
-
 import pkg, { prepareWAMessageMedia } from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
@@ -73,10 +72,10 @@ const test = async (m, Matrix) => {
   const prefix = /^[\\/!#.]/gi.test(m.body) ? m.body.match(/^[\\/!#.]/gi)[0] : '.';
         const cmd = m.body.startsWith(prefix) ? m.body.slice(prefix.length).toLowerCase() : '';
         let ethix = {
-    public: true // or false
+    public: true 
 };
 
-let mode = ethix.public ? 'private' : 'public';
+let mode = ethix.public ? 'public' : 'private';
 
         const validCommands = ['list', 'help', 'menu'];
 
