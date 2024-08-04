@@ -189,8 +189,8 @@ let mode = ethix.public ? 'public' : 'private';
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -340,8 +340,8 @@ let mode = ethix.public ? 'public' : 'private';
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -379,8 +379,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -445,8 +445,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -484,8 +484,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -520,8 +520,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -548,8 +548,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -579,8 +579,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -611,8 +611,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jtr',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
@@ -644,8 +644,8 @@ await Matrix.sendMessage(m.from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
