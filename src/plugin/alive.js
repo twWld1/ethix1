@@ -67,8 +67,8 @@ _________________________________________
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: 'https://chat.whatsapp.com/DRbySkWgcUpEGVUkbsI6jt',
-                  newsletterName: "TWORLD-MD",
+                  newsletterJid: '120363249960769123@newsletter',
+                  newsletterName: "",
                   serverMessageId: 143
                 }
               }
