@@ -67,13 +67,13 @@ const searchAPK = async (m, Matrix) => {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               body: proto.Message.InteractiveMessage.Body.create({
-                text: `Ethix-MD APK Downloader\n\n🔍 Search and download your favorite APKs easily.\n\n📌 Simply select an APK from the list below to get started.\n\n`
+                text: `TWORLD-MD APK Downloader\n\n🔍 Search and download your favorite APKs easily.\n\n📌 Simply select an APK from the list below to get started.\n\n`
               }),
               footer: proto.Message.InteractiveMessage.Footer.create({
-                text: "© Powered By Ethix-MD"
+                text: "© Powered By TWORLD-MD"
               }),
               header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/fbbe1744668b44637c21a.jpg` } }, { upload: Matrix.waUploadToServer })),
+                ...(await prepareWAMessageMedia({ image: { url: `https://telegra.ph/file/62333464ba8d6a28e1f4f.jpg` } }, { upload: Matrix.waUploadToServer })),
                 title: ``,
                 gifPlayback: true,
                 subtitle: "",
@@ -87,7 +87,7 @@ const searchAPK = async (m, Matrix) => {
                       title: "🔖 Select an APK",
                       sections: [
                         {
-                          title: "😎 Top 10 APK Results",
+                          title: "😎 TWORLD Top 10 APK Results",
                           highlight_label: "🤩 Top 10",
                           rows: apkButtons
                         },
@@ -128,7 +128,7 @@ const searchAPK = async (m, Matrix) => {
         const iconUrl = apkDetails.icon;
         const size = apkDetails.size;
 
-        await Matrix.sendMessage(m.from, { image: { url: iconUrl }, caption: `You selected this APK:\n\nName: ${selectedAPK.name}\nsize: ${size}\n\n> © Powered by Ethix-MD` }, { quoted: m });
+        await Matrix.sendMessage(m.from, { image: { url: iconUrl }, caption: `You selected this APK:\n\nName: ${selectedAPK.name}\nsize: ${size}\n\n> © Powered by TWORLD-MD` }, { quoted: m });
 
   
         const apkMessage = {
